@@ -30,9 +30,6 @@ namespace Presistence.Configurations
 
             builder.Property(e => e.OperatorId)
                 .IsRequired();
-
-            builder.Property(e => e.Shortcode)
-                .IsRequired();
         }
     }
 }

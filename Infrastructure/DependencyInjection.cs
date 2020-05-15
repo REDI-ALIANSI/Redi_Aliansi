@@ -16,7 +16,7 @@ namespace Infrastructure
             services.AddTransient<IDateTime, MachineDateTime>();
             services.AddTransient<IMsgQ, MsgQ>();
             services.AddTransient<IExecuteDllService, ExecuteDllService>();
-
+            services.AddTransient<IHttpRequest, HttpRequest>();
 
             return services;
         }

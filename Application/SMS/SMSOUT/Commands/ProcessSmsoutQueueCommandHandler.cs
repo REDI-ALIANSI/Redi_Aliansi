@@ -19,7 +19,7 @@ namespace Application.SMS.SMSOUT.Commands
         private readonly IMsgQ _msgQ;
         private readonly IMediator _mediator;
 
-        ProcessSmsoutQueueCommandHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator)
+        public ProcessSmsoutQueueCommandHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator)
         {
             _context = context;
             _msgQ = msgQ;
@@ -31,10 +31,11 @@ namespace Application.SMS.SMSOUT.Commands
             var vm = new SmsoutVm();
             try
             {
-                string msgQueue = await _msgQ.ConsumerQueue(request.Queue);
+                string msgQueue = await _msgQ.ConsumerQueue(request.Queue, request.QueueAuth);
                 if (!msgQueue.Equals("ERROR : NO MESSAGE FOUND"))
                 {
                     var smsoutQ = JsonSerializer.Deserialize<SmsoutD>(msgQueue);
+                    smsoutQ.Message = _context.Messages.Where(o => o.MessageId.Equals(smsoutQ.MessageId)).SingleOrDefault();
                     vm.Msisdn = smsoutQ.Msisdn;
                     vm.Mt_Message = smsoutQ.Mt_Message;
                     vm.DateCreated = smsoutQ.DateCreated;
@@ -43,14 +44,14 @@ namespace Application.SMS.SMSOUT.Commands
                     vm.Iparam = smsoutQ.Iparam;
                     vm.MtTxId = smsoutQ.MtTxId;
                     vm.OperatorId = smsoutQ.OperatorId;
-                    vm.Shortcode = smsoutQ.Shortcode;
+                    //vm.Shortcode = smsoutQ.Shortcode;
                     vm.MessageId = smsoutQ.MessageId;
                     vm.ServiceId = smsoutQ.ServiceId;
                     
                     if (!(smsoutQ is null))
                     {
                         //to do send to each OperatorId URI here, return smsoutQ.trx_status 200 if success or 500 if failed
-                        if (smsoutQ.DateToProcessed >= DateTime.Now)
+                        if (smsoutQ.DateToProcessed <= DateTime.Now)
                         {
                             vm.DateProcessed = DateTime.Now;
                             //Indosat Send MT Process
@@ -59,7 +60,7 @@ namespace Application.SMS.SMSOUT.Commands
                                 var vmIndosat = await _mediator.Send(new SmsoutIndosatCommand
                                 {
                                     Smsout = smsoutQ
-                                });
+                                }, cancellationToken);
                                 if (vmIndosat.Response.ToLower().Contains("error"))
                                 {
                                     smsoutQ.Trx_Status = "500";
@@ -79,7 +80,7 @@ namespace Application.SMS.SMSOUT.Commands
                                 var vmXl = await _mediator.Send(new SmsoutXlCommand
                                 {
                                     Smsout = smsoutQ
-                                });
+                                }, cancellationToken);
                                 if (vmXl.Response.ToLower().Contains("error"))
                                 {
                                     smsoutQ.Trx_Status = "500";
@@ -99,7 +100,7 @@ namespace Application.SMS.SMSOUT.Commands
                                 var vmTsel = await _mediator.Send(new SmsoutTselCommand
                                 {
                                     Smsout = smsoutQ
-                                });
+                                }, cancellationToken);
                                 vm.Response = vmTsel.Response;
 
                                 if (vmTsel.Response.Contains("ERROR"))
@@ -107,18 +108,18 @@ namespace Application.SMS.SMSOUT.Commands
                                 else
                                 {
                                     smsoutQ.Trx_Status = "200";
-                                   /*var DnQ = new SmsdnD();
-                                     DnQ.ErrorCode = vmTsel.Response;
-                                     DnQ.MtTxId = smsoutQ.MtTxId;
-                                     DnQ.ErrorDesc = String.Empty;
-                                     DnQ.Status = (vmTsel.Response.Equals("1") ? "Delivered" : "Failed");*/
+                                   //var DnQ = new SmsdnD();
+                                   //  DnQ.ErrorCode = vmTsel.Response;
+                                   //  DnQ.MtTxId = smsoutQ.MtTxId;
+                                   //  DnQ.ErrorDesc = String.Empty;
+                                   //  DnQ.Status = (vmTsel.Response.Equals("1") ? "Delivered" : "Failed");
 
                                     await _mediator.Send(new InsertDnRequest
                                     {
                                         DnErrorcode = vmTsel.Response,
                                         DnMtid = smsoutQ.MtTxId,
                                         Status = vmTsel.Response.Equals("1") ? "Delivered" : "Failed"
-                                    });
+                                    }, cancellationToken);
                                 } 
                                 vm.URI_Hit = vmTsel.URI_Hit;
                             }
@@ -140,14 +141,14 @@ namespace Application.SMS.SMSOUT.Commands
                                     smsoutQ.Iparam = 1;
                                 }
                                 else if (smsoutQ.Sparam.Equals("RETRY"))
-                                    smsoutQ.Iparam++;
+                                    smsoutQ.Iparam += 1;
 
-                                await _msgQ.ProducerQueue(smsoutQ, request.Queue);
+                                await _msgQ.ProducerQueue(smsoutQ, request.Queue, request.QueueAuth);
                             }
                         }
                         else
                         {
-                            await _msgQ.ProducerQueue(smsoutQ, request.Queue);
+                            await _msgQ.ProducerQueue(smsoutQ, request.Queue, request.QueueAuth);
                         }
                     }
                     else
@@ -159,13 +160,12 @@ namespace Application.SMS.SMSOUT.Commands
                 {
                     throw new NotFoundException(nameof(SmsoutD), msgQueue);
                 }
-
-                return vm;
             }
             catch (Exception ex)
             {
                 throw ex;
             }
+            return vm;
         }
     }
 }

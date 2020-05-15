@@ -1,4 +1,5 @@
-﻿using Domain.Entities.SMS;
+﻿using Common;
+using Domain.Entities.SMS;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -9,5 +10,6 @@ namespace Application.SMS.SMSDN.Commands
     public class SendSmsDnWatchQueue : IRequest
     {
         public SmsdnD smsdnD { get; set; }
+        public RabbitMQAuth QueueAuth { get; set; }
     }
 }

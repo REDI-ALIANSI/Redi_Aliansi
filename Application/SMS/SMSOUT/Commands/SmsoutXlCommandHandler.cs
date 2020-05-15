@@ -17,7 +17,7 @@ namespace Application.SMS.SMSOUT.Commands
         private readonly IRediSmsDbContext _context;
         private readonly IHttpRequest _httpRequest;
 
-        SmsoutXlCommandHandler(IRediSmsDbContext context, IHttpRequest httpRequest)
+        public SmsoutXlCommandHandler(IRediSmsDbContext context, IHttpRequest httpRequest)
         {
             _context = context;
             _httpRequest = httpRequest;
@@ -42,7 +42,7 @@ namespace Application.SMS.SMSOUT.Commands
                 url.Append("&MSG_CLASS=1");
                 url.Append("&TEXT=" + request.Smsout.Mt_Message);
                 url.Append("&REGISTERED=yes");
-                url.Append("&SOURCE_ADDR=" + request.Smsout.Shortcode);
+                url.Append("&SOURCE_ADDR=" + request.Smsout.Service.Shortcode);
                 url.Append("&SHORT_NAME=" + request.Smsout.Message.SidBilling);
                 url.Append("&APP_ID=" + request.Smsout.Message.Billing2);
                 if (request.Smsout.Message.MessageType.Equals("PULL"))

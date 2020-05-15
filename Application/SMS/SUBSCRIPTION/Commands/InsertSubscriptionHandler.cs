@@ -53,8 +53,7 @@ namespace Application.SMS.SUBSCRIPTION.Commands
                             ScheduleDict.Add(ScheduleDayOfWeek, TempToNextRenewalDay);
                         }
                     }
-
-                    NextRenewalDateDay = ScheduleDict.Min().Value;
+                    NextRenewalDateDay = ScheduleDict.Min(x => x.Value);
                 }
                 else
                 {

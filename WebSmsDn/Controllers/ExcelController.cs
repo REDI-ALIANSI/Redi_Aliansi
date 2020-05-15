@@ -5,10 +5,12 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Application.SMS.SMSDN.Commands;
+using Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace WebSmsDn.Controllers
@@ -16,6 +18,12 @@ namespace WebSmsDn.Controllers
     public class ExcelController : BaseController
     {
         private readonly ILogger _logger = Serilog.Log.ForContext<ExcelController>();
+        private IOptions<RabbitMQAuth> _RabbitMQAppSetting;
+
+        public ExcelController(IOptions<RabbitMQAuth> RabbitMQAppSetting)
+        {
+            _RabbitMQAppSetting = RabbitMQAppSetting;
+        }
 
         [HttpGet]
         [AllowAnonymous]
@@ -45,7 +53,8 @@ namespace WebSmsDn.Controllers
                 {
                     DnErrorcode = ErrorCode,
                     DnMtid = request._tid,
-                    Status = Dnstatus
+                    Status = Dnstatus,
+                    QueueAuth = _RabbitMQAppSetting.Value
                 });
 
                 var response = new HttpResponseMessage(HttpStatusCode.OK);

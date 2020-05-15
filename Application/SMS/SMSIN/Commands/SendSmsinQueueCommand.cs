@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Common;
+using MediatR;
 
 namespace Application.SMS.SMSIN.Commands
 {
@@ -9,5 +10,6 @@ namespace Application.SMS.SMSIN.Commands
         public string Motxid { get; set; }
         public int OperatorId { get; set; }
         public int Shortcode { get; set; }
+        public RabbitMQAuth QueueAuth { get; set; }
     }
 }

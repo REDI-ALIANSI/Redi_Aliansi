@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Common;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,5 +10,6 @@ namespace Application.SMS.SMSDN.Commands
     {
         public string queue { get; set; }
         public string appsDllPath { get; set; }
+        public RabbitMQAuth QueueAuth { get; set; }
     }
 }

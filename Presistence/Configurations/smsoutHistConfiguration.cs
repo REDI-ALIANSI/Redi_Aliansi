@@ -33,15 +33,10 @@ namespace Presistence.Configurations
             builder.Property(e => e.OperatorId)
                 .IsRequired();
 
-            builder.Property(e => e.Shortcode)
-                .IsRequired();
-
             builder.Property(e => e.MessageId)
                 .IsRequired();
 
-            builder.HasOne(e => e.SmsdnHist)
-                .WithOne(e => e.SmsoutHist)
-                .HasPrincipalKey<SmsdnHist>(e => e.MtTxId);
+            builder.HasAlternateKey(e => e.MtTxId);
         }
     }
 }

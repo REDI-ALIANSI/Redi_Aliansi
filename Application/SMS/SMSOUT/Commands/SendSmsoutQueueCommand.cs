@@ -1,4 +1,5 @@
-﻿using Domain.Entities.SMS;
+﻿using Common;
+using Domain.Entities.SMS;
 using MediatR;
 
 
@@ -13,5 +14,6 @@ namespace Application.SMS.SMSOUT.Commands
         public string rQueue { get; set; }
         public int rServiceId { get; set; }
         public string rMtTxId { get; set; }
+        public RabbitMQAuth QueueAuth { get; set; }
     }
 }

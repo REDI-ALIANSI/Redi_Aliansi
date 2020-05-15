@@ -8,22 +8,29 @@ using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Application.Common.Interfaces;
+using Common;
 
 namespace Infrastructure
 {
     public class MsgQ : IMsgQ
     {
-        public Task<string> ConsumerQueue(string Queue)
+        public Task<string> ConsumerQueue(string Queue, RabbitMQAuth mQAuth)
         {
             try
             {
-                var factory = new ConnectionFactory() { HostName = "localhost" };
+                var factory = new ConnectionFactory
+                {
+                    HostName = mQAuth.HostName,
+                    UserName = mQAuth.UserName,
+                    Password = mQAuth.Password,
+                    VirtualHost = mQAuth.VirtualHost
+                };
                 string message = String.Empty;
                 using (var connection = factory.CreateConnection())
                 using (var channel = connection.CreateModel())
                 {
                     channel.QueueDeclare(queue: Queue,
-                                         durable: false,
+                                         durable: true,
                                          exclusive: false,
                                          autoDelete: false,
                                          arguments: null);
@@ -43,8 +50,8 @@ namespace Infrastructure
                                          consumer: consumer);
                     */
 
-                    bool noAct = false;
-                    BasicGetResult result = channel.BasicGet(Queue, noAct);
+                    //bool noAct = false;
+                    BasicGetResult result = channel.BasicGet(Queue, true);
                     if (result == null)
                     {
                         return Task.FromResult("ERROR : NO MESSAGE FOUND");
@@ -63,9 +70,15 @@ namespace Infrastructure
             }
         }
 
-        public Task<int> GetQueueCount(string Queue)
+        public Task<int> GetQueueCount(string Queue, RabbitMQAuth mQAuth)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory
+            {
+                HostName = mQAuth.HostName,
+                UserName = mQAuth.UserName,
+                Password = mQAuth.Password,
+                VirtualHost = mQAuth.VirtualHost
+            };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
@@ -74,11 +87,17 @@ namespace Infrastructure
             }
         }
 
-        public Task ProducerQueue(object msgObj, string Queue)
+        public Task ProducerQueue(object msgObj, string Queue, RabbitMQAuth mQAuth)
         {
             try
             {
-                var factory = new ConnectionFactory() { HostName = "localhost" };
+                var factory = new ConnectionFactory
+                {
+                    HostName = mQAuth.HostName,
+                    UserName = mQAuth.UserName,
+                    Password = mQAuth.Password,
+                    VirtualHost = mQAuth.VirtualHost
+                };
                 using (var connection = factory.CreateConnection())
                 using (var channel = connection.CreateModel())
                 {

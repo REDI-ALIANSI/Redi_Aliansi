@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Presistence;
@@ -9,9 +10,10 @@ using Presistence;
 namespace Presistence.Migrations
 {
     [DbContext(typeof(RediSmsDbContext))]
-    partial class RediSmsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200513072012_Update-Entitiy-smsoutdn")]
+    partial class UpdateEntitiysmsoutdn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -490,7 +492,7 @@ namespace Presistence.Migrations
                         new
                         {
                             Shortcode = 93450,
-                            Created = new DateTime(2020, 5, 14, 14, 34, 26, 56, DateTimeKind.Local).AddTicks(8394),
+                            Created = new DateTime(2020, 5, 13, 14, 20, 12, 59, DateTimeKind.Local).AddTicks(5754),
                             CreatedBy = "InitialMigration",
                             Description = "HM Short Code"
                         });
@@ -540,16 +542,14 @@ namespace Presistence.Migrations
                         .HasMaxLength(100);
 
                     b.Property<string>("MtTxId")
-                        .HasColumnType("character varying(200)");
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .HasColumnType("character varying(20)")
                         .HasMaxLength(20);
 
                     b.HasKey("SmsdnDId");
-
-                    b.HasIndex("MtTxId")
-                        .IsUnique();
 
                     b.ToTable("SmsdnDs");
                 });
@@ -570,16 +570,14 @@ namespace Presistence.Migrations
                         .HasMaxLength(100);
 
                     b.Property<string>("MtTxId")
-                        .HasColumnType("character varying(200)");
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .HasColumnType("character varying(20)")
                         .HasMaxLength(20);
 
                     b.HasKey("SmsdnHistId");
-
-                    b.HasIndex("MtTxId")
-                        .IsUnique();
 
                     b.ToTable("SmsdnHists");
                 });
@@ -720,6 +718,8 @@ namespace Presistence.Migrations
 
                     b.HasKey("SmsoutDId");
 
+                    b.HasAlternateKey("MtTxId");
+
                     b.HasIndex("MessageId");
 
                     b.HasIndex("OperatorId");
@@ -784,6 +784,8 @@ namespace Presistence.Migrations
                         .HasMaxLength(20);
 
                     b.HasKey("SmsoutHistId");
+
+                    b.HasAlternateKey("MtTxId");
 
                     b.HasIndex("MessageId");
 
@@ -1030,22 +1032,6 @@ namespace Presistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Entities.SMS.SmsdnD", b =>
-                {
-                    b.HasOne("Domain.Entities.SMS.SmsoutD", "SmsoutD")
-                        .WithOne("SmsdnD")
-                        .HasForeignKey("Domain.Entities.SMS.SmsdnD", "MtTxId")
-                        .HasPrincipalKey("Domain.Entities.SMS.SmsoutD", "MtTxId");
-                });
-
-            modelBuilder.Entity("Domain.Entities.SMS.SmsdnHist", b =>
-                {
-                    b.HasOne("Domain.Entities.SMS.SmsoutHist", "SmsoutHist")
-                        .WithOne("SmsdnHist")
-                        .HasForeignKey("Domain.Entities.SMS.SmsdnHist", "MtTxId")
-                        .HasPrincipalKey("Domain.Entities.SMS.SmsoutHist", "MtTxId");
-                });
-
             modelBuilder.Entity("Domain.Entities.SMS.SmsinD", b =>
                 {
                     b.HasOne("Domain.Entities.Operator", "Operator")
@@ -1084,6 +1070,13 @@ namespace Presistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.SMS.SmsdnD", "SmsdnD")
+                        .WithOne("SmsoutD")
+                        .HasForeignKey("Domain.Entities.SMS.SmsoutD", "MtTxId")
+                        .HasPrincipalKey("Domain.Entities.SMS.SmsdnD", "MtTxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Operator", "Operator")
                         .WithMany()
                         .HasForeignKey("OperatorId")
@@ -1102,6 +1095,13 @@ namespace Presistence.Migrations
                     b.HasOne("Domain.Entities.SMS.Message", "Message")
                         .WithMany()
                         .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.SMS.SmsdnHist", "SmsdnHist")
+                        .WithOne("SmsoutHist")
+                        .HasForeignKey("Domain.Entities.SMS.SmsoutHist", "MtTxId")
+                        .HasPrincipalKey("Domain.Entities.SMS.SmsdnHist", "MtTxId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

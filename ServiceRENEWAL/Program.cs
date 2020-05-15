@@ -10,6 +10,9 @@ using Serilog.AspNetCore;
 using Serilog.Sinks.File;
 using Serilog.Filters;
 using Application;
+using Presistence;
+using Microsoft.Extensions.Configuration;
+using Infrastructure;
 
 namespace ServiceRENEWAL
 {
@@ -47,7 +50,11 @@ namespace ServiceRENEWAL
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddApplication();
-                    services.AddHostedService<Worker>();
+                    IConfiguration configuration = hostContext.Configuration;
+
+                    services.AddPersistence(configuration);
+                    services.AddInfrastructure(configuration);
+                    services.AddHostedService<WorkerRenewal>();
                 })
                 .UseSerilog();
     }

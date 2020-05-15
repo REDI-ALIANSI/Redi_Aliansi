@@ -14,10 +14,8 @@ namespace Domain.Entities.SMS
 
         public int ServiceId { get; set; }
         public int OperatorId { get; set; }
-        public int Shortcode { get; set; }
 
         public Service Service { get; set; }
         public Operator Operator { get; set; }
-        public ShortCode ShortCode { get; set; }
     }
 }

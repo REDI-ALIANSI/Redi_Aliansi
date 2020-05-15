@@ -14,6 +14,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Diagnostics;
 using WebSmsin.Services;
 using Serilog;
+using Presistence;
+using Infrastructure;
+using Common;
 
 namespace WebSmsin
 {
@@ -32,9 +35,14 @@ namespace WebSmsin
         {
             services.AddControllers();
             services.AddApplication();
-            //services.AddPersistence(Configuration);
+            services.AddPersistence(Configuration);
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddTransient<IMsgQ, MsgQ>();
+            services.AddTransient<IExecuteDllService, ExecuteDllService>();
+            services.AddTransient<IHttpRequest, HttpRequest>();
+            services.Configure<RabbitMQAuth>(Configuration.GetSection("RabbitMQAuth"));
+
 
             services.AddHttpContextAccessor();
 

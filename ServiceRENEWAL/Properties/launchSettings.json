@@ -1,9 +1,9 @@
-﻿{
+{
   "profiles": {
     "ServiceRENEWAL": {
       "commandName": "Project",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development"
+        "ASPNET_ENVIRONMENT": "Development"
       }
     }
   }

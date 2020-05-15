@@ -1,4 +1,5 @@
-﻿using Domain.Entities.SMS;
+﻿using Common;
+using Domain.Entities.SMS;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -11,5 +12,6 @@ namespace Application.SMS.SMSDN.Commands
         public string DnErrorcode { get; set; }
         public string DnMtid { get; set; }
         public string Status { get; set; }
+        public RabbitMQAuth QueueAuth { get; set; }
     }
 }

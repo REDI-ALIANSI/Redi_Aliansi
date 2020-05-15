@@ -5,10 +5,12 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Application.SMS.SMSIN.Commands;
+using Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace WebSmsin.Controllers
@@ -16,6 +18,12 @@ namespace WebSmsin.Controllers
     public class IndosatController : BaseController
     {
         private readonly ILogger _logger = Serilog.Log.ForContext<IndosatController>();
+        private IOptions<RabbitMQAuth> _RabbitMQAppSetting;
+
+        public IndosatController(IOptions<RabbitMQAuth> RabbitMQAppSetting)
+        {
+            _RabbitMQAppSetting = RabbitMQAppSetting;
+        }
 
         [HttpGet]
         [AllowAnonymous]
@@ -32,7 +40,8 @@ namespace WebSmsin.Controllers
                     Mo_Message = request.sms,
                     Msisdn = request.msisdn,
                     OperatorId = 51021,
-                    Shortcode = Convert.ToInt32(request.sc)
+                    Shortcode = Convert.ToInt32(request.sc),
+                    QueueAuth = _RabbitMQAppSetting.Value
                 });
 
                 var response = IndosatInResponse.GetResponse(request.transid);
@@ -41,7 +50,7 @@ namespace WebSmsin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.Error("ERROR Exeption: " + ex.ToString());
+                _logger.Error("ERROR Exeption: " + ex.Message);
                 return "BAD REQUEST!";
             }
         }

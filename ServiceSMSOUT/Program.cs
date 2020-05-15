@@ -10,6 +10,11 @@ using Serilog.AspNetCore;
 using Serilog.Sinks.File;
 using Serilog.Filters;
 using Application;
+using Microsoft.Extensions.Configuration;
+using Presistence;
+using Application.Common.Interfaces;
+using Infrastructure;
+using Common;
 
 namespace ServiceSMSOUT
 {
@@ -47,7 +52,14 @@ namespace ServiceSMSOUT
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddApplication();
-                    services.AddHostedService<Worker>();
+                    
+                    IConfiguration configuration = hostContext.Configuration;
+
+                    services.AddPersistence(configuration);
+                    services.AddInfrastructure(configuration);
+                    services.Configure<RabbitMQAuth>(configuration.GetSection("RabbitMQAuth"));
+
+                    services.AddHostedService<WorkerSmsout>();
                 })
                 .UseSerilog();
     }

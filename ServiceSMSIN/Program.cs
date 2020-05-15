@@ -10,6 +10,11 @@ using Serilog.AspNetCore;
 using Serilog.Sinks.File;
 using Serilog.Filters;
 using Application;
+using Presistence;
+using Application.Common.Interfaces;
+using Infrastructure;
+using Microsoft.Extensions.Configuration;
+using Common;
 
 namespace ServiceSMSIN
 {
@@ -20,7 +25,7 @@ namespace ServiceSMSIN
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
-                .WriteTo.File(@"D:\services\log\SMS\smsin\smsin-general-log-.log", 
+                .WriteTo.File(@"D:\services\log\SMS\smsin\worker\smsin-general-log-.log", 
                 rollingInterval: RollingInterval.Day,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] TraceId: {TraceId} Context: {SourceContext} {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
@@ -47,7 +52,17 @@ namespace ServiceSMSIN
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddApplication();
-                    services.AddHostedService<Worker>();
+
+                    IConfiguration configuration = hostContext.Configuration;
+
+                    services.AddPersistence(configuration);
+                    services.AddInfrastructure(configuration);
+                    //services.AddTransient<IMsgQ, MsgQ>();
+                    //services.AddTransient<IExecuteDllService, ExecuteDllService>();
+                    //services.AddTransient<IHttpRequest, HttpRequest>();
+                    services.Configure<RabbitMQAuth>(configuration.GetSection("RabbitMQAuth"));
+
+                    services.AddHostedService<WorkerSmsin>();
                 })
                 .UseSerilog();
     }

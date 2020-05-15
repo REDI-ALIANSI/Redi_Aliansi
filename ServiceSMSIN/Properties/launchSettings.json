@@ -1,9 +1,9 @@
-﻿{
+{
   "profiles": {
     "ServiceSMSIN": {
       "commandName": "Project",
       "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development"
+        "ASPNET_ENVIRONMENT": "Development"
       }
     }
   }

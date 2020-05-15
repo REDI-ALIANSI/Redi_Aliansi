@@ -4,14 +4,25 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Application.SMS.SMSIN.Commands;
+using Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace WebSmsin.Controllers
 {
     public class ExcelController : BaseController
     {
+        private readonly ILogger _logger = Serilog.Log.ForContext<ExcelController>();
+        private IOptions<RabbitMQAuth> _RabbitMQAppSetting;
+
+        public ExcelController(IOptions<RabbitMQAuth> RabbitMQAppSetting)
+        {
+            _RabbitMQAppSetting = RabbitMQAppSetting;
+        }
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<HttpResponseMessage> Get([FromQuery] ExcelInRequest request)
@@ -42,6 +53,9 @@ namespace WebSmsin.Controllers
                     GetTrxId = request._TID;
                 }
 
+                _logger.Information("Request SMSIN: Mottxid ={Motxid}, Mo_Message ={Mo_Message}, Msisdn= {Msisdn}, Operator= {OperatorId}, ShortCod = {Sc}",
+                    GetTrxId, request._SC, GetMsisdn, "51011", GetShortCode);
+
                 //Send TO SMSINQ
                 await Mediator.Send(new SendSmsinQueueCommand
                 {
@@ -49,12 +63,15 @@ namespace WebSmsin.Controllers
                     Mo_Message = request._SC,
                     Msisdn = GetMsisdn,
                     OperatorId = 51011,
-                    Shortcode = GetShortCode
+                    Shortcode = GetShortCode,
+                    QueueAuth = _RabbitMQAppSetting.Value
                 });
                 result = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+                _logger.Information("Request status: OK");
             }
             catch (Exception ex)
             {
+                _logger.Error("ERROR Exeption: " + ex.Message);
                 result = new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
             }
 

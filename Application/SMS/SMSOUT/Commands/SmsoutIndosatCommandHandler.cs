@@ -15,7 +15,7 @@ namespace Application.SMS.SMSOUT.Commands
         private readonly IRediSmsDbContext _context;
         private readonly IHttpRequest _httpRequest;
 
-        SmsoutIndosatCommandHandler(IRediSmsDbContext context, IHttpRequest httpRequest)
+        public SmsoutIndosatCommandHandler(IRediSmsDbContext context, IHttpRequest httpRequest)
         {
             _context = context;
             _httpRequest = httpRequest;

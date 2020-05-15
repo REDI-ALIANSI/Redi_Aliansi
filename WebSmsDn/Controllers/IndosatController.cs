@@ -5,10 +5,11 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Application.SMS.SMSDN.Commands;
-using MediatR;
+using Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace WebSmsDn.Controllers
@@ -16,6 +17,12 @@ namespace WebSmsDn.Controllers
     public class IndosatController : BaseController
     {
         private readonly ILogger _logger = Serilog.Log.ForContext<IndosatController>();
+        private IOptions<RabbitMQAuth> _RabbitMQAppSetting;
+
+        public IndosatController(IOptions<RabbitMQAuth> RabbitMQAppSetting)
+        {
+            _RabbitMQAppSetting = RabbitMQAppSetting;
+        }
 
         [HttpGet]
         [AllowAnonymous]
@@ -37,7 +44,8 @@ namespace WebSmsDn.Controllers
                 {
                     DnErrorcode = request.status,
                     DnMtid = request.tid,
-                    Status = Dnstatus
+                    Status = Dnstatus,
+                    QueueAuth = _RabbitMQAppSetting.Value
                 });
 
                 var response = IndosatDnResponse.GetResponse(request.tid,request.status);

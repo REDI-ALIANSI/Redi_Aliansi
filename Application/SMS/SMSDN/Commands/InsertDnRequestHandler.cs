@@ -32,13 +32,26 @@ namespace Application.SMS.SMSDN.Commands
                 SmsDn.ErrorDesc = String.Empty;
                 SmsDn.MtTxId = request.DnMtid;
 
-                //GET SMSOUT CEK IF it needed DN Watcher
-                var SmsOut = await _mediator.Send(new GetSmsoutbyMttxid { MttxId = request.DnMtid});
+                /*GET SMSOUT CEK IF it needed DN Watcher*/
+                var SmsOut = await _mediator.Send(new GetSmsoutbyMttxid { MttxId = request.DnMtid}, cancellationToken);
                 SmsDn.SmsoutD = SmsOut;
                 //Check and put DN if it on DN Watcher
                 if (!(SmsOut is null))
                 {
-                    if(SmsOut.IsDnWatch) await _mediator.Send(new SendSmsDnWatchQueue { smsdnD = SmsDn });
+                    if(SmsOut.IsDnWatch) await _mediator.Send(new SendSmsDnWatchQueue { smsdnD = SmsDn, QueueAuth = request.QueueAuth }, cancellationToken);
+
+                    var subs = await _context.Subscriptions.Where(s => s.Msisdn.Equals(SmsOut.Msisdn) &&
+                                                                                   s.ServiceId.Equals(SmsOut.ServiceId) &&
+                                                                                   s.OperatorId.Equals(SmsOut.OperatorId)).FirstOrDefaultAsync();
+                    if (!subs.Equals(null))
+                    {
+                        subs.Mt_Sent += 1;
+                        if (SmsDn.Status.Equals("Delivered"))
+                        {
+                            subs.Mt_Success += 1;
+                            if (SmsOut.Message.Sid.Price > 0) subs.Total_Revenue += SmsOut.Message.Sid.Price;
+                        }
+                    }
                 }
                 
                 //Save SMSDND

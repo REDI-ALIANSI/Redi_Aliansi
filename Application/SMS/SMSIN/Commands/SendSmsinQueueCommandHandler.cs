@@ -48,7 +48,7 @@ namespace Application.SMS.SMSIN.Commands
                 if (!subKeyword.Equals(null)) KeywordServiceid = subKeyword.Keyword.ServiceId;
                 else
                 {
-                    throw new NotFoundException(nameof(Keyword), keyword);
+                    KeywordServiceid = await _context.Services.Where(s => s.Description.Equals("ERROR")).Select(o => o.ServiceId).SingleOrDefaultAsync();
                 }
             }
 
@@ -60,11 +60,11 @@ namespace Application.SMS.SMSIN.Commands
                 DateCreated = DateTime.Now,
                 OperatorId = request.OperatorId,
                 ServiceId = KeywordServiceid,
-                Shortcode = request.Shortcode
+                //Shortcode = request.Shortcode
             };
             string QueueName = "SMSINQ";
 
-            await _msgQ.ProducerQueue(smsin, QueueName);
+            await _msgQ.ProducerQueue(smsin, QueueName, request.QueueAuth);
 
             return Unit.Value;
         }

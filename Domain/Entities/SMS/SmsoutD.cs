@@ -19,11 +19,9 @@ namespace Domain.Entities.SMS
         public string MtTxId { get; set; }
         
         public int OperatorId { get; set; }
-        public int Shortcode { get; set; }
         public int MessageId { get; set; }
         public int ServiceId { get; set; }
 
-        public ShortCode ShortCode { get; set; }
         public Message Message { get; set; }
         public SmsdnD SmsdnD { get; set; }
         public Operator Operator { get; set; }

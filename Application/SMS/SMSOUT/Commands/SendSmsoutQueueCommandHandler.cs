@@ -13,7 +13,7 @@ namespace Application.SMS.SMSOUT.Commands
         private readonly IRediSmsDbContext _context;
         private readonly IMsgQ _msgQ;
 
-        public SendSmsoutQueueCommandHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator)
+        public SendSmsoutQueueCommandHandler(IRediSmsDbContext context, IMsgQ msgQ)
         {
             _context = context;
             _msgQ = msgQ;
@@ -34,7 +34,7 @@ namespace Application.SMS.SMSOUT.Commands
                         DateProcessed = null,
                         Trx_Status = "100",
                         IsDnWatch = request.rMessage.IsDnWatch,
-                        Shortcode = request.rMessage.Service.Shortcode,
+                        //Shortcode = request.rMessage.Service.Shortcode,
                         OperatorId = request.rMessage.OperatorId,
                         Sparam = request.rSparam,
                         Iparam = request.rIparam,
@@ -43,7 +43,7 @@ namespace Application.SMS.SMSOUT.Commands
                         MtTxId = request.rMtTxId
                     };
 
-                    await _msgQ.ProducerQueue(smsoutD, request.rQueue);
+                    await _msgQ.ProducerQueue(smsoutD, request.rQueue, request.QueueAuth);
                 }
                 else
                 {

@@ -6,19 +6,25 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.SMS.RENEWAL.Commands;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace ServiceRENEWAL
 {
-    public class Worker : BackgroundService
+    public class WorkerRenewal : BackgroundService
     {
-        private readonly ILogger _logger = Log.Logger.ForContext<Worker>();
-        private readonly IMediator _mediator;
+        private readonly ILogger _logger = Log.Logger.ForContext<WorkerRenewal>();
+        //private readonly IMediator _mediator;
 
-        public Worker(IMediator mediator)
+        /*public Worker(IMediator mediator)
         {
             _mediator = mediator;
+        }*/
+        public IServiceProvider Services { get; }
+        public WorkerRenewal(IServiceProvider service)
+        {
+            Services = service;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,10 +35,18 @@ namespace ServiceRENEWAL
                 {
                     _logger.Information("Worker RENEWAL running....");
                     var sw = Stopwatch.StartNew();
-                    await _mediator.Send(new DailyPrepRenewal
+                    using (var scope = Services.CreateScope())
                     {
-                        RenewalTime = DateTime.Today
-                    });
+                        var mediator =
+                        scope.ServiceProvider
+                            .GetRequiredService<IMediator>();
+
+                        await mediator.Send(new DailyPrepRenewal
+                        {
+                            RenewalTime = DateTime.Today
+                        }, stoppingToken);
+                    }
+                    
                     await Task.Delay(1000, stoppingToken);
                 }
                 catch (Exception ex)

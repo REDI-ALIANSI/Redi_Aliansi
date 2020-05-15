@@ -37,8 +37,8 @@ namespace Application.SMS.SMSIN.Commands
             var vm = new SmsinVm();
             try
             {
-                string msgQueue = await _msgQ.ConsumerQueue(request.queue);
-                string MtTxId = Guid.NewGuid().ToString("N");
+                string msgQueue = await _msgQ.ConsumerQueue(request.queue, request.QueueAuth);
+                string MtTxId = String.Empty;
                 if (!msgQueue.Equals("ERROR : NO MESSAGE FOUND"))
                 {
                     var smsinQ = JsonSerializer.Deserialize<SmsinD>(msgQueue);
@@ -103,6 +103,7 @@ namespace Application.SMS.SMSIN.Commands
                         {
                             foreach (var message in getMessages)
                             {
+                                MtTxId = Guid.NewGuid().ToString("N");
                                 //Send Message SMSOUTQ process here
                                 await _mediator.Send(new SendSmsoutQueueCommand
                                 {
@@ -112,7 +113,8 @@ namespace Application.SMS.SMSIN.Commands
                                     rQueue = "SMSOUTQ",
                                     rMsisdn = smsinQ.Msisdn,
                                     rServiceId = smsinQ.ServiceId,
-                                    rMtTxId = MtTxId
+                                    rMtTxId = MtTxId,
+                                    QueueAuth = request.QueueAuth
                                 }, cancellationToken);
                             }
                         }
@@ -123,7 +125,7 @@ namespace Application.SMS.SMSIN.Commands
                         vm.MotxId = smsinQ.MotxId;
                         vm.ServiceId = smsinQ.ServiceId;
                         vm.OperatorId = smsinQ.OperatorId;
-                        vm.Shortcode = smsinQ.Shortcode;
+                        //vm.Shortcode = smsinQ.Shortcode;
                         vm.Status = 200;
 
                         await _context.SmsinDs.AddAsync(smsinQ);

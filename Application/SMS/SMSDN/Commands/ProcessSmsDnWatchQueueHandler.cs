@@ -31,7 +31,7 @@ namespace Application.SMS.SMSDN.Commands
         {
             try
             {
-                string msgQueue = await _msgQ.ConsumerQueue(request.queue);
+                string msgQueue = await _msgQ.ConsumerQueue(request.queue, request.QueueAuth);
                 if (!msgQueue.Equals("ERROR : NO MESSAGE FOUND"))
                 {
                     var smsdnQ = JsonSerializer.Deserialize<SmsdnD>(msgQueue);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Domain.Entities.SMS;
+using Microsoft.Data.SqlClient;
 
 namespace Presistence.Configurations
 {
@@ -33,15 +34,10 @@ namespace Presistence.Configurations
             builder.Property(e => e.OperatorId)
                 .IsRequired();
 
-            builder.Property(e => e.Shortcode)
-                .IsRequired();
-
             builder.Property(e => e.MessageId)
                 .IsRequired();
 
-            builder.HasOne(e => e.SmsdnD)
-                .WithOne(e => e.SmsoutD)
-                .HasPrincipalKey<SmsdnD>(e => e.MtTxId);
+            builder.HasAlternateKey(e => e.MtTxId);
         }
     }
 }

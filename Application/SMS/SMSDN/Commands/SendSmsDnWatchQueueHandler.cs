@@ -39,7 +39,7 @@ namespace Application.SMS.SMSDN.Commands
                     if (smsdnd.SmsoutD.Message.IsDnWatch)
                     {
                         //put SMSDND to QUEUE SMSDNWATCH
-                        await _msgQ.ProducerQueue(smsdnd, QueueName);
+                        await _msgQ.ProducerQueue(smsdnd, QueueName, request.QueueAuth);
                     }
                     else if (smsdnd.SmsoutD.Message.IsDynamicBilling)
                     {

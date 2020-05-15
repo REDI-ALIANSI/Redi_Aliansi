@@ -17,7 +17,7 @@ namespace Application.SMS.SMSOUT.Commands
         private readonly IRediSmsDbContext _context;
         private readonly IHttpRequest _httpRequest;
 
-        SmsoutTselCommandHandler(IRediSmsDbContext context, IHttpRequest httpRequest)
+        public SmsoutTselCommandHandler(IRediSmsDbContext context, IHttpRequest httpRequest)
         {
             _context = context;
             _httpRequest = httpRequest;
@@ -40,7 +40,7 @@ namespace Application.SMS.SMSOUT.Commands
                 url.Append("?cpid=" + request.Smsout.Message.Billing1);
                 url.Append("&pwd=" + request.Smsout.Message.Billing2);
                 url.Append("&sid=" + request.Smsout.Message.SidBilling);
-                url.Append("&sender=" + request.Smsout.Shortcode);
+                url.Append("&sender=" + request.Smsout.Service.Shortcode);
                 url.Append("&msisdn=" + request.Smsout.Msisdn);
                 url.Append("&sms=" + request.Smsout.Mt_Message);
                 url.Append("&trx_id=" + request.Smsout.MtTxId);

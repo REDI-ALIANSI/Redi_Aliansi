@@ -22,10 +22,11 @@ namespace Presistence.Configurations
             builder.Property(e => e.ErrorDesc)
                 .HasMaxLength(100);
 
-            builder.HasAlternateKey(e => e.MtTxId);
-
-            builder.Property(e => e.MtTxId)
-                .IsRequired();
+            builder.HasOne(e => e.SmsoutD)
+                .WithOne(o => o.SmsdnD)
+                .HasForeignKey<SmsdnD>(e => e.MtTxId)
+                .HasPrincipalKey<SmsoutD>(o => o.MtTxId)
+                .IsRequired(false);
         }
     }
 }
