@@ -16,11 +16,11 @@ namespace Application.SMS.SMSOUT.Commands
         public int Iparam { get; set; }
         public string MtTxId { get; set; }
         public int OperatorId { get; set; }
-        public int Shortcode { get; set; }
         public int MessageId { get; set; }
         public int ServiceId { get; set; }
         public int Status { get; set; }
         public string Response { get; set; }
         public string URI_Hit { get; set; }
+        public string Sid { get; set; }
     }
 }

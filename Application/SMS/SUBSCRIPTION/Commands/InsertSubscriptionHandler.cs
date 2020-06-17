@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.SMS.RENEWAL.Queries;
 using Domain.Entities.SMS;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -15,52 +16,24 @@ namespace Application.SMS.SUBSCRIPTION.Commands
     public class InsertSubscriptionHandler : IRequestHandler<InsertSubscription, Subscription>
     {
         private readonly IRediSmsDbContext _context;
+        private readonly IMediator _mediator;
 
-        public InsertSubscriptionHandler(IRediSmsDbContext context)
+        public InsertSubscriptionHandler(IRediSmsDbContext context, IMediator mediator)
         {
             _context = context;
+            _mediator = mediator;
         }
         public async Task<Subscription> Handle(InsertSubscription request, CancellationToken cancellationToken)
         {
             try
             {
                 //Get Next renewDate
-                var RenewalConfigs = await _context.ServiceRenewalConfigurations.Where(r => r.ServiceId.Equals(request.rServiceid)
-                                                                                    && r.OperatorId.Equals(request.rOperatorid))
-                                                                                    .OrderBy(r => r.ScheduleOrder)
-                                                                                    .ToListAsync();
-
-                int NextRenewalDateDay = 1;
-                DateTime rNextRenewDate = DateTime.Today.AddDays(NextRenewalDateDay);
-                if (RenewalConfigs.Count.Equals(1) && RenewalConfigs.FirstOrDefault().IsSequence)
-                    NextRenewalDateDay = RenewalConfigs.FirstOrDefault().ScheduleSequence;
-                else if (RenewalConfigs.Count >= 1 && !RenewalConfigs.FirstOrDefault().IsSequence)
+                var rNextRenewDate = await _mediator.Send(new GetNextRenewalDate
                 {
-                    var ScheduleDayOfWeeks = RenewalConfigs.Select(r => r.ScheduleDay).ToArray();
-                    Dictionary<DayOfWeek?, int> ScheduleDict = new Dictionary<DayOfWeek?, int>();
-                    foreach (var ScheduleDayOfWeek in ScheduleDayOfWeeks)
-                    {
-                        if (ScheduleDayOfWeek != null)
-                        {
-                            int TempToNextRenewalDay = 1;
-                            DateTime TempNextDay = new DateTime();
-                            TempNextDay = DateTime.Today.AddDays(NextRenewalDateDay);
-                            while ((int)ScheduleDayOfWeek != (int)TempNextDay.DayOfWeek)
-                            {
-                                TempToNextRenewalDay++;
-                                TempNextDay = TempNextDay.AddDays(1);
-                            }
-                            ScheduleDict.Add(ScheduleDayOfWeek, TempToNextRenewalDay);
-                        }
-                    }
-                    NextRenewalDateDay = ScheduleDict.Min(x => x.Value);
-                }
-                else
-                {
-                    throw new NotFoundException(nameof(ServiceRenewalConfiguration), RenewalConfigs.FirstOrDefault());
-                }
+                    rServiceid = request.rServiceid,
+                    rOperatorid = request.rOperatorid
+                }, cancellationToken);
 
-                rNextRenewDate = DateTime.Today.AddDays(NextRenewalDateDay);
                 var NewSubs = new Subscription()
                 { 
                     Msisdn = request.rMsisdn,

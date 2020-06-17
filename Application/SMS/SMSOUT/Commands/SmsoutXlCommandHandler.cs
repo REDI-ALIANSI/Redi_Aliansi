@@ -24,10 +24,9 @@ namespace Application.SMS.SMSOUT.Commands
         }
         public async Task<SmsoutTelcoHitVm> Handle(SmsoutXlCommand request, CancellationToken cancellationToken)
         {
+            SmsoutTelcoHitVm XlVm = new SmsoutTelcoHitVm();
             try
             {
-                SmsoutTelcoHitVm XlVm = new SmsoutTelcoHitVm();
-
                 StringBuilder url = new StringBuilder();
                 //get URL Operator
                 string XltUrl = _context.Operators.Where(o => o.OperatorId.Equals(request.Smsout.OperatorId))
@@ -42,13 +41,14 @@ namespace Application.SMS.SMSOUT.Commands
                 url.Append("&MSG_CLASS=1");
                 url.Append("&TEXT=" + request.Smsout.Mt_Message);
                 url.Append("&REGISTERED=yes");
-                url.Append("&SOURCE_ADDR=" + request.Smsout.Service.Shortcode);
-                url.Append("&SHORT_NAME=" + request.Smsout.Message.SidBilling);
-                url.Append("&APP_ID=" + request.Smsout.Message.Billing2);
+                url.Append("&SOURCE_ADDR=" + request.Smsout.Message.SidBilling);
+                url.Append("&SHORT_NAME=" + request.Smsout.Message.Billing2);
+                url.Append("&APP_ID=" + request.Smsout.Message.Billing3);
                 if (request.Smsout.Message.MessageType.Equals("PULL"))
                 {
                     url.Append("&TX_ID=" + request.Smsout.MtTxId);
                 }
+                XlVm.URI_Hit = url.ToString();
 
                 //call XL API
                 XlVm.ResponseRaw = await _httpRequest.GetRequest(url.ToString());
@@ -58,16 +58,18 @@ namespace Application.SMS.SMSOUT.Commands
                 {
                     resp = (XlResponseMessage)new XmlSerializer(typeof(XlResponseMessage)).Deserialize(reader);
                 }
-                XlVm.Response = resp.tid;
-
-                XlVm.URI_Hit = url.ToString();
+                if (!XlVm.ResponseRaw.Contains("ERROR"))
+                    XlVm.Response = resp.tid;
+                else XlVm.Response = XlVm.ResponseRaw;
 
                 //return HTTP Request
                 return XlVm;
             }
             catch(Exception ex)
             {
-                throw ex;
+                XlVm.Response = "Error: " + ex.ToString();
+                XlVm.ResponseRaw = ex.ToString();
+                return XlVm;
             }
         }
     }

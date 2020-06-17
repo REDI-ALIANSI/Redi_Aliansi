@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Application.SMS.MESSAGE.Command
 {
-    public class GetRenewalMessageHandler : IRequestHandler<GetRenewalMessage, Message>
+    public class GetRenewalMessageHandler : IRequestHandler<GetRenewalMessage, string>
     {
         private readonly IRediSmsDbContext _context;
 
@@ -20,30 +20,39 @@ namespace Application.SMS.MESSAGE.Command
             _context = context;
         }
 
-        public async Task<Message> Handle(GetRenewalMessage request, CancellationToken cancellationToken)
+        public async Task<string> Handle(GetRenewalMessage request, CancellationToken cancellationToken)
         {
             try
             {
                 //If Push Message is empty
+                var MessageTxt = String.Empty;
                 if (String.IsNullOrEmpty(request.rMessage.MessageTxt))
                 {
-                    var iContent = await _context.Contents.Where(c => c.MessageId.Equals(request.rMessage.MessageId) && c.ContentSchedule.Equals(DateTime.Today)).FirstOrDefaultAsync();
-                    if(request.rMessage.IsRichContent)
+                    var iContent = await _context.Contents.Where(c => c.MessageId.Equals(request.rMessage.MessageId) && c.ContentSchedule.Equals(request.rRenewalDate)).FirstOrDefaultAsync();
+
+                    if(iContent != null)
                     {
-                        //HOMEWORK: replace with Get content API URL later
-                        request.rMessage.MessageTxt = iContent.ContentText;
+                        if (request.rMessage.IsRichContent)
+                        {
+                            //HOMEWORK: replace with Get content API URL later
+                            MessageTxt = iContent.ContentText;
+                        }
+                        else
+                        {
+                            MessageTxt = iContent.ContentText;
+                        }
+
+                        iContent.Processed = true;
+                        _context.Contents.Update(iContent);
+                        await _context.SaveChangesAsync(cancellationToken);
                     }
                     else
                     {
-                        request.rMessage.MessageTxt = iContent.ContentText;
+                        MessageTxt = String.Empty;
                     }
-
-                    iContent.Processed = true;
-                    _context.Contents.Update(iContent);
-                    await _context.SaveChangesAsync(cancellationToken);
                 }
                 
-                return request.rMessage;
+                return MessageTxt;
             }
             catch (Exception ex)
             {

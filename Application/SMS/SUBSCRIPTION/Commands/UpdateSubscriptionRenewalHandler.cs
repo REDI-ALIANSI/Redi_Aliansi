@@ -20,14 +20,10 @@ namespace Application.SMS.SUBSCRIPTION.Commands
 
         public async Task<Unit> Handle(UpdateSubscriptionRenewal request, CancellationToken cancellationToken)
         {
-            var subscription = _context.Subscriptions.Where(s => s.Msisdn.Equals(request.rMsisdn)
-                                                                && s.ServiceId.Equals(request.rServiceId)
-                                                                && s.OperatorId.Equals(request.rOperatorId))
-                                                                .FirstOrDefault();
-            if(subscription != null)
+            if(request.subscription != null)
             {
-                subscription.Next_Renew_Time = request.rNextRenewalDate;
-                _context.Subscriptions.Update(subscription);
+                request.subscription.Next_Renew_Time = request.rNextRenewalDate;
+                _context.Subscriptions.Update(request.subscription);
                 await _context.SaveChangesAsync(cancellationToken);
             }
                 

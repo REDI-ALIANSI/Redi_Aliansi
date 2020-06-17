@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="SMS\RENEWAL\Queries\" />
     <Folder Include="SMS\SMSDN\Queries\" />
     <Folder Include="SMS\SMSIN\Queries\" />
   </ItemGroup>

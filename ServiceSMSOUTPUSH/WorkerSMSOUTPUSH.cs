@@ -13,15 +13,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Common;
 
-namespace ServiceSMSOUT
+namespace ServiceSMSOUTPUSH
 {
-    public class WorkerSmsout : BackgroundService
+    public class WorkerSMSOUTPUSH : BackgroundService
     {
-        private readonly ILogger _logger = Log.Logger.ForContext<WorkerSmsout>();
+        private readonly ILogger _logger = Log.Logger.ForContext<WorkerSMSOUTPUSH>();
         private readonly IOptions<RabbitMQAuth> _RabbitMQAppSetting;
         public IServiceProvider Services { get; }
 
-        public WorkerSmsout(IServiceProvider service, IOptions<RabbitMQAuth> RabbitMQAppSetting)
+        public WorkerSMSOUTPUSH(IServiceProvider service, IOptions<RabbitMQAuth> RabbitMQAppSetting)
         {
             Services = service;
             _RabbitMQAppSetting = RabbitMQAppSetting;
@@ -33,7 +33,7 @@ namespace ServiceSMSOUT
             {
                 try
                 {
-                    _logger.Information("Worker SMSOUT running...");
+                    _logger.Information("Worker SMSOUTPUSH running...");
                     var sw = Stopwatch.StartNew();
                     var iQueueAuth = _RabbitMQAppSetting.Value;
                     using (var scope = Services.CreateScope())
@@ -44,10 +44,10 @@ namespace ServiceSMSOUT
 
                         var smsoutVm = await mediator.Send(new ProcessSmsoutQueueCommand
                         {
-                            Queue = "SMSOUTQ",
+                            Queue = "SMSOUTP",
                             QueueAuth = iQueueAuth
                         }, stoppingToken);
-                        _logger.Information("Processed SMSOUTD Msisdn:{msisdn} Mt_Message:{Mt_Message} MtTxId:{MtTxId} IsDnWatch:{IsDnWatch} ServiceId:{ServiceId} OperatorId:{OperatorId} Sid:{Sid} Status:{Status}",
+                        _logger.Information("Processed SMSOUTP Msisdn:{msisdn} Mt_Message:{Mt_Message} MtTxId:{MtTxId} IsDnWatch:{IsDnWatch} ServiceId:{ServiceId} OperatorId:{OperatorId} Sid:{Sid} Status:{Status}",
                             smsoutVm.Msisdn,
                             smsoutVm.Mt_Message,
                             smsoutVm.MtTxId,
@@ -57,7 +57,7 @@ namespace ServiceSMSOUT
                             smsoutVm.Sid,
                             smsoutVm.Status);
                     }
-                    
+
                     await Task.Delay(1000, stoppingToken);
                 }
                 catch (Exception ex)

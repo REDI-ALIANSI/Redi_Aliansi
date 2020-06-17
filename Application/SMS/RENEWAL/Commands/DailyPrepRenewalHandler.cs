@@ -31,15 +31,19 @@ namespace Application.SMS.RENEWAL.Commands
                 {
                     foreach (var service in ListService)
                     {
-                        var ListServiceRenewalConfig = await _context.ServiceRenewalConfigurations.Where(c => c.ServiceId.Equals(service.ServiceId) && c.IsActive)
+                        var ListServiceRenewalConfig = await _context.ServiceRenewalConfigurations.Where(c => c.ServiceId == service.ServiceId 
+                                                                                                        && c.IsActive && (c.ScheduleDay == DateTime.Today.DayOfWeek || c.IsSequence))
                                                                                                     .Include(c => c.Message)
                                                                                                     .ToListAsync();
                         int RenewalConfigCount = ListServiceRenewalConfig.Count;
-                        foreach (var RenewalConfig in ListServiceRenewalConfig)
+                        if (RenewalConfigCount > 0)
                         {
-                            //Build function to process Renewal Config
-                            await _mediator.Send(new ProcessRenewalConfig
-                            { renewalConfig = RenewalConfig, rRenewalTime = request.RenewalTime, rRenewalConfigCount  = RenewalConfigCount},cancellationToken);
+                            foreach (var RenewalConfig in ListServiceRenewalConfig)
+                            {
+                                //Build function to process Renewal Config
+                                await _mediator.Send(new ProcessRenewalConfig
+                                { renewalConfig = RenewalConfig, rRenewalTime = request.RenewalTime, rRenewalConfigCount = RenewalConfigCount, QueueAuth = request.QueueAuth }, cancellationToken);
+                            }
                         }
                     }
                 }

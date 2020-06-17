@@ -10,14 +10,13 @@ using Serilog.AspNetCore;
 using Serilog.Sinks.File;
 using Serilog.Filters;
 using Application;
-using Presistence;
 using Microsoft.Extensions.Configuration;
-using Infrastructure;
-using ServiceRENEWAL.Services;
+using Presistence;
 using Application.Common.Interfaces;
+using Infrastructure;
 using Common;
 
-namespace ServiceRENEWAL
+namespace ServiceSMSOUTPUSH
 {
     public class Program
     {
@@ -26,7 +25,7 @@ namespace ServiceRENEWAL
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
-                .WriteTo.File(@"D:\services\log\SMS\renewal\renewal-general-log-.log",
+                .WriteTo.File(@"D:\services\log\SMS\smsout\smsoutPUSH-general-log-.log",
                 rollingInterval: RollingInterval.Day,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] TraceId: {TraceId} Context: {SourceContext} {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
@@ -53,13 +52,14 @@ namespace ServiceRENEWAL
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddApplication();
+
                     IConfiguration configuration = hostContext.Configuration;
 
                     services.AddPersistence(configuration);
                     services.AddInfrastructure(configuration);
-                    services.AddHostedService<WorkerRenewal>();
-                    services.AddScoped<ICurrentUserService, CurrentUserService>();
                     services.Configure<RabbitMQAuth>(configuration.GetSection("RabbitMQAuth"));
+
+                    services.AddHostedService<WorkerSMSOUTPUSH>();
                 })
                 .UseSerilog();
     }

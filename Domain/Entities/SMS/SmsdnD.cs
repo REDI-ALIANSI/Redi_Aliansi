@@ -10,6 +10,7 @@ namespace Domain.Entities.SMS
         public string ErrorCode { get; set; }
         public string Status { get; set; }
         public string ErrorDesc { get; set; }
+        public DateTime DateInserted { get; set; }
 
         public string MtTxId { get; set; }
 

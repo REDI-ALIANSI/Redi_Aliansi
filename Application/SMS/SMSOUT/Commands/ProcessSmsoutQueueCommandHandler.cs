@@ -44,9 +44,9 @@ namespace Application.SMS.SMSOUT.Commands
                     vm.Iparam = smsoutQ.Iparam;
                     vm.MtTxId = smsoutQ.MtTxId;
                     vm.OperatorId = smsoutQ.OperatorId;
-                    //vm.Shortcode = smsoutQ.Shortcode;
                     vm.MessageId = smsoutQ.MessageId;
                     vm.ServiceId = smsoutQ.ServiceId;
+                    vm.Sid = smsoutQ.Message.SidBilling;
                     
                     if (!(smsoutQ is null))
                     {
@@ -88,8 +88,8 @@ namespace Application.SMS.SMSOUT.Commands
                                 else
                                 {
                                     smsoutQ.Trx_Status = "200";
+                                    smsoutQ.MtTxId = vmXl.Response;
                                 }
-                                smsoutQ.MtTxId = vmXl.Response;
                                 vm.Response = vmXl.ResponseRaw;
                                 vm.URI_Hit = vmXl.URI_Hit;
                             }

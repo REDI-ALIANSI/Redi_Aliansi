@@ -16,7 +16,7 @@ namespace WebSmsin.Controllers
     public class ExcelController : BaseController
     {
         private readonly ILogger _logger = Serilog.Log.ForContext<ExcelController>();
-        private IOptions<RabbitMQAuth> _RabbitMQAppSetting;
+        private readonly IOptions<RabbitMQAuth> _RabbitMQAppSetting;
 
         public ExcelController(IOptions<RabbitMQAuth> RabbitMQAppSetting)
         {

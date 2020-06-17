@@ -31,6 +31,7 @@ namespace Application.SMS.SMSDN.Commands
                 SmsDn.Status = request.Status;
                 SmsDn.ErrorDesc = String.Empty;
                 SmsDn.MtTxId = request.DnMtid;
+                SmsDn.DateInserted = DateTime.Now;
 
                 /*GET SMSOUT CEK IF it needed DN Watcher*/
                 var SmsOut = await _mediator.Send(new GetSmsoutbyMttxid { MttxId = request.DnMtid}, cancellationToken);
@@ -51,6 +52,7 @@ namespace Application.SMS.SMSDN.Commands
                             subs.Mt_Success += 1;
                             if (SmsOut.Message.Sid.Price > 0) subs.Total_Revenue += SmsOut.Message.Sid.Price;
                         }
+                        _context.Subscriptions.Update(subs);
                     }
                 }
                 

@@ -6,8 +6,9 @@ using MediatR;
 
 namespace Application.SMS.MESSAGE.Command
 {
-    public class GetRenewalMessage : IRequest<Message>
+    public class GetRenewalMessage : IRequest<string>
     {
         public Message rMessage { get; set; }
+        public DateTime rRenewalDate { get; set; }
     }
 }

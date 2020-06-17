@@ -20,7 +20,7 @@ namespace Application.SMS.SMSDN.Commands
         private readonly IMsgQ _msgQ;
         private readonly IMediator _mediator;
 
-        ProcessSmsDnWatchQueueHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator)
+        public ProcessSmsDnWatchQueueHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator)
         {
             _context = context;
             _msgQ = msgQ;

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Presistence;
@@ -9,9 +10,10 @@ using Presistence;
 namespace Presistence.Migrations
 {
     [DbContext(typeof(RediSmsDbContext))]
-    partial class RediSmsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200616090213_Add_column_DateInserted_smsdn")]
+    partial class Add_column_DateInserted_smsdn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

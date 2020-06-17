@@ -13,8 +13,28 @@ namespace Infrastructure
 
         public async Task<string> GetRequest(string Uri)
         {
-            string result = await client.GetStringAsync(Uri);
-            return result;
+            try
+            {
+                string result = await client.GetStringAsync(Uri);
+                return result;
+            }
+            catch(Exception ex)
+            {
+                return "error: " + ex;
+            }
+        }
+
+        public async Task<HttpResponseMessage> GetHttpResp(string Uri)
+        {
+            try
+            {
+                var result = await client.GetAsync(Uri);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

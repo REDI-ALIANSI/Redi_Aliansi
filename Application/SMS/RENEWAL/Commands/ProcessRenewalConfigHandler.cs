@@ -39,11 +39,19 @@ namespace Application.SMS.RENEWAL.Commands
                     rRenewalDate = request.rRenewalTime
                 }, cancellationToken);
 
-                if(listSubscription != null)
+                if (listSubscription.Count > 0)
                 {
                     var today = DateTime.Today.DayOfWeek;
                     //GET Renewal Message from content
-                    var rMessage = await _mediator.Send(new GetRenewalMessage { rMessage = request.renewalConfig.Message },cancellationToken);
+                    var rMessage = request.renewalConfig.Message;
+                    var rTxtMessage = await _mediator.Send(new GetRenewalMessage { rMessage = request.renewalConfig.Message, rRenewalDate = DateTime.Today },cancellationToken);
+                    
+                    //If renewal message is empty send Email warning notification here
+                    if (!String.IsNullOrEmpty(rTxtMessage))
+                    {
+                        rMessage.MessageTxt = rTxtMessage;
+                    }
+                    
                     // Make function for put renewal message to SMSOUTD Queue
                     if (request.renewalConfig.ActiveDll)
                     {
@@ -67,40 +75,53 @@ namespace Application.SMS.RENEWAL.Commands
                         NextRenewalDate = await _mediator.Send(new GetNextDayofWeekDate { DayofWeek = NextRenewalDay },cancellationToken);
 
                         //send message to SMSOUTP Queue
-                        foreach (var subscription in listSubscription)
+                        foreach (var Subscription in listSubscription)
                         {
-                            string iQueue = "SMSOUTP";
-                            await _mediator.Send(new SendSmsoutQueueCommand
+                            if (!String.IsNullOrEmpty(rMessage.MessageTxt))
                             {
-                                rMessage = rMessage,
-                                rMsisdn = subscription.Msisdn,
-                                rSparam = String.Empty,
-                                rIparam = 0,
-                                rQueue = iQueue
-                            });
+                                string iQueue = "SMSOUTP";
+                                var MtTxId = Guid.NewGuid().ToString("N");
+                                await _mediator.Send(new SendSmsoutQueueCommand
+                                {
+                                    rMessage = rMessage,
+                                    rMsisdn = Subscription.Msisdn,
+                                    rSparam = String.Empty,
+                                    rIparam = 0,
+                                    rQueue = iQueue,
+                                    rServiceId = Subscription.ServiceId,
+                                    rMtTxId = MtTxId,
+                                    QueueAuth = request.QueueAuth
+                                });
+                            }
                             //Update Subs for next Renewal Date
-                            await _mediator.Send(new UpdateSubscriptionRenewal { rMsisdn = subscription.Msisdn, rNextRenewalDate = NextRenewalDate, rOperatorId = subscription.OperatorId, rServiceId = subscription.ServiceId },cancellationToken);
+                            await _mediator.Send(new UpdateSubscriptionRenewal { subscription = Subscription, rNextRenewalDate = NextRenewalDate }, cancellationToken);
                         }
                     }
                     //if service is sequence
                     else if (request.renewalConfig.IsSequence && String.IsNullOrEmpty(request.renewalConfig.ScheduleDay.ToString()))
                     {
                         NextRenewalDate = DateTime.Today.AddDays(request.renewalConfig.ScheduleSequence);
-
                         //send message to SMSOUTP Queue
-                        foreach (var subscription in listSubscription)
+                        foreach (var Subscription in listSubscription)
                         {
-                            string iQueue = "SMSOUTP";
-                            await _mediator.Send(new SendSmsoutQueueCommand
+                            if (!String.IsNullOrEmpty(rMessage.MessageTxt))
                             {
-                                rMessage = rMessage,
-                                rMsisdn = subscription.Msisdn,
-                                rSparam = String.Empty,
-                                rIparam = 0,
-                                rQueue = iQueue
-                            });
+                                string iQueue = "SMSOUTP";
+                                var MtTxId = Guid.NewGuid().ToString("N");
+                                await _mediator.Send(new SendSmsoutQueueCommand
+                                {
+                                    rMessage = rMessage,
+                                    rMsisdn = Subscription.Msisdn,
+                                    rSparam = String.Empty,
+                                    rIparam = 0,
+                                    rQueue = iQueue,
+                                    rServiceId = Subscription.ServiceId,
+                                    rMtTxId = MtTxId,
+                                    QueueAuth = request.QueueAuth
+                                });
+                            }
                             //Update Subs for next Renewal Date
-                            await _mediator.Send(new UpdateSubscriptionRenewal { rMsisdn = subscription.Msisdn, rNextRenewalDate = NextRenewalDate, rOperatorId = subscription.OperatorId, rServiceId = subscription.ServiceId },cancellationToken);
+                            await _mediator.Send(new UpdateSubscriptionRenewal { subscription = Subscription, rNextRenewalDate = NextRenewalDate }, cancellationToken);
                         }
                     }
                 }
