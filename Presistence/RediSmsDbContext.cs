@@ -4,26 +4,20 @@ using Domain.Common;
 using Domain.Entities;
 using Domain.Entities.SMS;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Presistence.Identity;
 
 namespace Presistence
 {
-    public class RediSmsDbContext : DbContext, IRediSmsDbContext
+    public class RediSmsDbContext : IdentityDbContext<ApplicationUser>, IRediSmsDbContext
     {
         private readonly ICurrentUserService _currentUserService;
         private readonly IDateTime _dateTime;
 
-        public RediSmsDbContext(DbContextOptions<RediSmsDbContext> options)
-            : base(options)
-        {
-        }
-
         public RediSmsDbContext(
-            DbContextOptions<RediSmsDbContext> options,
+            DbContextOptions options,
             ICurrentUserService currentUserService,
             IDateTime dateTime)
             : base(options)
@@ -52,10 +46,16 @@ namespace Presistence
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<SubscriptionHist> SubscriptionHists { get; set; }
         public DbSet<Operator> Operators { get; set; }
+        public DbSet<RevenueReport> RevenueReports { get; set; }
+        public DbSet<CampaignReport> CampaignReports { get; set; }
+        public DbSet<SubscriptionReport> SubscriptionReports { get; set; }
+        public DbSet<GenReportStatus> GenReports { get; set; }
+        public DbSet<BlackList> BlackLists { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(RediSmsDbContext).Assembly);
+            base.OnModelCreating(modelBuilder);
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
@@ -68,7 +68,6 @@ namespace Presistence
                 {
                     entry.Entity.CreatedBy = _currentUserService.GetUserId();
                     entry.Entity.Created = _dateTime.Now;
-
                 }
                 else if (entry.State == EntityState.Modified)
                 {

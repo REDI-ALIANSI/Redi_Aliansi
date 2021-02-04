@@ -7,6 +7,7 @@ using Application.Common.Interfaces;
 using Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,8 +30,8 @@ namespace WebXLconnector
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddApplication();
-            services.AddPersistence(Configuration);
+            //services.AddApplication();
+            //services.AddPersistence(Configuration);
 
             services.AddTransient<IMsgQ, MsgQ>();
             services.AddTransient<IExecuteDllService, ExecuteDllService>();
@@ -47,6 +48,11 @@ namespace WebXLconnector
             }
 
             app.UseRouting();
+
+            //app.UseForwardedHeaders(new ForwardedHeadersOptions
+            //{
+            //    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            //});
 
             app.UseAuthorization();
 

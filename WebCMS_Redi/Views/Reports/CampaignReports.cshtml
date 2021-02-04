@@ -1,0 +1,132 @@
+﻿@model Application.SMS.REPORTS.ViewModel.CampaignReportVM
+@{
+    ViewData["Title"] = "Redi Campaign Report";
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Campaign Report</h1>
+
+<!-- Basic Card Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Filter</h6>
+    </div>
+    <div class="card-body">
+        <form asp-controller="Reports" asp-action="CampaignReports" method="post">
+            <div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="StartDate" id="Date">Start Date : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <input class="form-control datepicker" asp-for="StartDate" type="date" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="EndDate" id="Date">End Date : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <input class="form-control datepicker" asp-for="EndDate" type="date" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="OperatorId" id="Date">Operator : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control" asp-for="OperatorId" asp-items="Model.ListVMOperator" name="Operatorid"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="ServiceId" id="Date">Service : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control" asp-for="ServiceId" asp-items="Model.ListVMService" name="ServiceId"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="CampaignKeyword" id="Date">Keyword : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control" asp-for="CampaignKeyword" asp-items="Model.ListKeywords" name="CampaignKeyword"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <input class="btn btn-success" type="submit" value="Search" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- DataTables COntents -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Campaign Report</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Service</th>
+                            <th>Operator</th>
+                            <th>Keyword</th>
+                            <th>New Member</th>
+                            <th>Churn Member</th>
+                            <th>Total Member</th>
+                            <th>MT Sent</th>
+                            <th>MT Hits</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>Date</th>
+                            <th>Service</th>
+                            <th>Operator</th>
+                            <th>Keyword</th>
+                            <th>New Member</th>
+                            <th>Churn Member</th>
+                            <th>Total Member</th>
+                            <th>MT Sent</th>
+                            <th>MT Hits</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </tfoot>
+                    @foreach (var camReport in Model.Campaignreports)
+                    {
+                        <tr>
+                            <td>@camReport.Date</td>
+                            <td>@camReport.ServiceCampaign.Service.Name</td>
+                            <td>@camReport.ServiceCampaign.Operator.OperatorName</td>
+                            <td>@camReport.ServiceCampaign.CampaignKeyword</td>
+                            <td>@camReport.New_Member</td>
+                            <td>@camReport.Churn_Member</td>
+                            <td>@camReport.Total_Member</td>
+                            <td>@camReport.Mt_Sent</td>
+                            <td>@camReport.Mt_Hits</td>
+                            <td>@camReport.Revenue</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

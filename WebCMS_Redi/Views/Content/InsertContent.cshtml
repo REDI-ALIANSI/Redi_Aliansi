@@ -1,0 +1,107 @@
+﻿@model Application.SMS.CONTENT.ViewModel.InsertContentVM
+
+@{
+    ViewData["Title"] = "InsertContent";
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Insert New Content</h1>
+
+
+<!-- Basic Card Example -->
+<div class="row">
+    <div class="col-md-10">
+        <form asp-controller="Content" asp-action="InsertContent" method="post">
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label asp-for="ContentText" id="Date">Content Text : </label>
+                    </div>
+                    <div class="col-md-6">
+                        <input class="form-control" asp-for="ContentText" type="text" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label asp-for="ContentSchedule" id="Date">Schedule Date : </label>
+                    </div>
+                    <div class="col-md-6">
+                        <input class="form-control datepicker" asp-for="ContentSchedule" type="date" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label asp-for="ContentPath" id="Date">Rich Content : </label>
+                    </div>
+                    <div class="col-md-6">
+                        <input class="form-control" asp-for="ContentPath" type="file" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label asp-for="MessageOrder" id="Date">Message order : </label>
+                    </div>
+                    <div class="col-md-6">
+                        <input class="form-control" asp-for="MessageOrder" type="number" value="1" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label asp-for="ContentTypeId" id="Date">Content Type : </label>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-control" asp-for="ContentTypeId" asp-items="Model.ContentType" name="ContentTypeId"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label asp-for="ServiceId" id="Date">Service : </label>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-control" asp-for="ServiceId" asp-items="Model.ListVMService" name="ServiceId"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label asp-for="OperatorId" id="Date">Operator : </label>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-control" asp-for="OperatorId" asp-items="Model.ListVMOperator" name="Operatorid"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <input class="btn btn-success" type="submit" value="Submit" />
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (ViewBag.Message != null)
+{
+    <script type="text/javascript">
+
+        window.onload = function () {
+            var url = "@Url.Action("InsertContent")";
+
+            alert("@ViewBag.Message");
+            window.location.href = url;
+        }
+    </script>
+}

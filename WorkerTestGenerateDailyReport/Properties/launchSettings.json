@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "WorkerTestGenerateDailyReport": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

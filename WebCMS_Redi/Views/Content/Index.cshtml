@@ -1,0 +1,176 @@
+﻿@model Application.SMS.CONTENT.ViewModel.ContentViewVM
+@{
+    ViewData["Title"] = "Redi Content List";
+    int i = 1;
+    var t = TempData["EditStatus"];
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Content List</h1>
+
+<!-- Basic Card Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Filter</h6>
+    </div>
+    <div class="card-body">
+        <form asp-controller="Content" asp-action="Index" method="post">
+            <div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="StartDate" id="Date">Start Date : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <input class="form-control datepicker" asp-for="StartDate" type="date" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="EndDate" id="Date">End Date : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <input class="form-control datepicker" asp-for="EndDate" type="date" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="OperatorId" id="Date">Operator : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control" asp-for="OperatorId" asp-items="Model.ListVMOperator" name="Operatorid"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="ServiceId" id="Date">Service : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control" asp-for="ServiceId" asp-items="Model.ListVMService" name="ServiceId"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <input class="btn btn-success" type="submit" value="Search" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- DataTables COntents -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Content List</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Service</th>
+                            <th>Operator</th>
+                            <th>Content Text</th>
+                            <th>Content Type</th>
+                            <th>Schedule Date</th>
+                            <th>Uploaded Date</th>
+                            <th>Uploaded By</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>No.</th>
+                            <th>Service</th>
+                            <th>Operator</th>
+                            <th>Content Text</th>
+                            <th>Content Type</th>
+                            <th>Schedule Date</th>
+                            <th>Uploaded Date</th>
+                            <th>Uploaded By</th>
+                            <th>Action</th>
+                        </tr>
+                    </tfoot>
+                    @foreach (var content in Model.Contents)
+                    {
+                        <tr>
+                            <td>@i</td>
+                            <td>@content.Message.Service.Name</td>
+                            <td>@content.Message.Operator.OperatorName</td>
+                            <td>@content.ContentText</td>
+                            <td>@content.ContentType.Name</td>
+                            <td>@content.ContentSchedule.Value.ToShortDateString()</td>
+                            <td>@content.Created.Date.ToShortDateString()</td>
+                            <td>@content.CreatedBy</td>
+                            <td>
+
+                                <a href="@Url.Action("EditContentIndex","Content",new { contentId = content.ContentId })" class="btn btn-warning btn-circle btn-sm" title="EDIT">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a onclick="Delete(@content.ContentId)" class="btn btn-danger btn-circle btn-sm" title="DELETE">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        $(".datepicker").datepicker();
+
+        @*function Edit(ContentId) {
+            var url = "@Url.Action("EditContentIndex")";
+            var ContentId = ContentId;
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: { 'contentId': ContentId },
+                success: function (results) {
+                    window.location.href = url;
+            });
+        }*@
+
+        function Delete(ContentId) {
+            var url = "@Url.Action("Delete")";
+            var ContentId = ContentId;
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: { 'contentId': ContentId },
+                success: function (response) {
+                    alert(response);
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
+
+    @if (t != null)
+    {
+        <script type="text/javascript">
+
+        window.onload = function () {
+            var url = "@Url.Action("Index")";
+
+            alert("@t");
+            window.location.href = url;
+        }
+        </script>
+    }
+}

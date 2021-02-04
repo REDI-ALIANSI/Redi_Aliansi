@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.SMS.BLACKLIST.Query;
 using Application.SMS.RENEWAL.Queries;
 using Domain.Entities.SMS;
 using MediatR;
@@ -27,31 +28,40 @@ namespace Application.SMS.SUBSCRIPTION.Commands
         {
             try
             {
-                //Get Next renewDate
-                var rNextRenewDate = await _mediator.Send(new GetNextRenewalDate
+                //Check if its on Blacklist
+                if (!await _mediator.Send(new IsBlacklist { Msisdn = request.rMsisdn, OperatorId= request.rOperatorid}))
                 {
-                    rServiceid = request.rServiceid,
-                    rOperatorid = request.rOperatorid
-                }, cancellationToken);
+                    //Get Next renewDate
+                    var rNextRenewDate = await _mediator.Send(new GetNextRenewalDate
+                    {
+                        rServiceid = request.rServiceid,
+                        rOperatorid = request.rOperatorid
+                    }, cancellationToken);
 
-                var NewSubs = new Subscription()
-                { 
-                    Msisdn = request.rMsisdn,
-                    Reg_Keyword = request.rMoMessage,
-                    Subscription_Date = DateTime.Now,
-                    Next_Renew_Time = rNextRenewDate,
-                    Total_Revenue = 0,
-                    Mt_Sent = 0,
-                    Mt_Success = 0,
-                    ServiceId = request.rServiceid,
-                    OperatorId = request.rOperatorid,
-                    //Shortcode = request.rShortcode
-                };
+                    var NewSubs = new Subscription()
+                    {
+                        Msisdn = request.rMsisdn,
+                        Reg_Keyword = request.rMoMessage,
+                        Subscription_Date = DateTime.Now,
+                        Next_Renew_Time = rNextRenewDate,
+                        Total_Revenue = 0,
+                        Mt_Sent = 0,
+                        Mt_Success = 0,
+                        ServiceId = request.rServiceid,
+                        OperatorId = request.rOperatorid,
+                        //Shortcode = request.rShortcode
+                    };
 
-                await _context.Subscriptions.AddAsync(NewSubs);
-                await _context.SaveChangesAsync(cancellationToken);
+                    await _context.Subscriptions.AddAsync(NewSubs);
+                    await _context.SaveChangesAsync(cancellationToken);
 
-                return NewSubs;
+                    return NewSubs;
+                }
+                else
+                {
+                    //Throw Msisdn is blacklisted
+                    throw new NotFoundException(nameof(BlackList), request.rMsisdn);
+                }
             }
             catch (Exception ex)
             {

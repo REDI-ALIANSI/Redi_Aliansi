@@ -13,17 +13,6 @@ namespace Presistence.Configurations
 
             builder.Property(e => e.Description)
                 .HasMaxLength(300);
-
-            builder.HasData
-                (
-                    new ShortCode
-                    {
-                        Created = DateTime.Now,
-                        CreatedBy = "InitialMigration",
-                        Shortcode = 93450,
-                        Description = "HM Short Code"
-                    }
-                ) ;
         }
     }
 }

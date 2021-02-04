@@ -16,6 +16,7 @@ using Microsoft.Extensions.Diagnostics;
 using Serilog;
 using Common;
 using Infrastructure;
+using WebSmsDn.Services;
 
 namespace WebSmsDn
 {
@@ -36,7 +37,7 @@ namespace WebSmsDn
             services.AddApplication();
             services.AddPersistence(Configuration);
 
-            //services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.Configure<RabbitMQAuth>(Configuration.GetSection("RabbitMQAuth"));
 
             services.AddHttpContextAccessor();

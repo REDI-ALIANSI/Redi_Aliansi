@@ -1,20 +1,15 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Serilog.Events;
-using Serilog.AspNetCore;
-using Serilog.Sinks.File;
-using Serilog.Filters;
 using Application;
 using Microsoft.Extensions.Configuration;
 using Presistence;
 using Application.Common.Interfaces;
 using Infrastructure;
 using Common;
+using ServiceSMSOUTPUSH.Services;
+using Serilog.Events;
 
 namespace ServiceSMSOUTPUSH
 {
@@ -24,8 +19,9 @@ namespace ServiceSMSOUTPUSH
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                .WriteTo.File(@"D:\services\log\SMS\smsout\smsoutPUSH-general-log-.log",
+                .WriteTo.File(@"D:\services\log\SMS\smsoutpush\worker\smsoutpush-general-log-.log",
                 rollingInterval: RollingInterval.Day,
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] TraceId: {TraceId} Context: {SourceContext} {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
@@ -58,9 +54,10 @@ namespace ServiceSMSOUTPUSH
                     services.AddPersistence(configuration);
                     services.AddInfrastructure(configuration);
                     services.Configure<RabbitMQAuth>(configuration.GetSection("RabbitMQAuth"));
+                    services.Configure<WorkerConfig>(configuration.GetSection("WorkerConfig"));
+                    services.AddScoped<ICurrentUserService, CurrentUserService>();
 
-                    services.AddHostedService<WorkerSMSOUTPUSH>();
-                })
-                .UseSerilog();
+                    services.AddHostedService<WorkerSmsoutPush>();
+                });
     }
 }

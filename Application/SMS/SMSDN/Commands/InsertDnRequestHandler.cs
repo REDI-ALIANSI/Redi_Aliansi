@@ -26,12 +26,14 @@ namespace Application.SMS.SMSDN.Commands
             try 
             {
                 //Put to SMSDND object
-                var SmsDn = new SmsdnD();
-                SmsDn.ErrorCode = request.DnErrorcode;
-                SmsDn.Status = request.Status;
-                SmsDn.ErrorDesc = String.Empty;
-                SmsDn.MtTxId = request.DnMtid;
-                SmsDn.DateInserted = DateTime.Now;
+                var SmsDn = new SmsdnD
+                {
+                    ErrorCode = request.DnErrorcode,
+                    Status = request.Status,
+                    ErrorDesc = String.Empty,
+                    MtTxId = request.DnMtid,
+                    DateInserted = DateTime.Now
+                };
 
                 /*GET SMSOUT CEK IF it needed DN Watcher*/
                 var SmsOut = await _mediator.Send(new GetSmsoutbyMttxid { MttxId = request.DnMtid}, cancellationToken);
@@ -44,7 +46,7 @@ namespace Application.SMS.SMSDN.Commands
                     var subs = await _context.Subscriptions.Where(s => s.Msisdn.Equals(SmsOut.Msisdn) &&
                                                                                    s.ServiceId.Equals(SmsOut.ServiceId) &&
                                                                                    s.OperatorId.Equals(SmsOut.OperatorId)).FirstOrDefaultAsync();
-                    if (!subs.Equals(null))
+                    if (!(subs is null))
                     {
                         subs.Mt_Sent += 1;
                         if (SmsDn.Status.Equals("Delivered"))

@@ -12,11 +12,12 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            //services.AddScoped<IUserManager, UserManagerService>();
+           //services.AddScoped<IUserManager, UserManagerService>();
             services.AddTransient<IDateTime, MachineDateTime>();
             services.AddTransient<IMsgQ, MsgQ>();
             services.AddTransient<IExecuteDllService, ExecuteDllService>();
             services.AddTransient<IHttpRequest, HttpRequest>();
+            services.AddTransient<IShortenURL, Bitly_url>();
 
             return services;
         }

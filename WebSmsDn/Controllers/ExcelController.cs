@@ -32,7 +32,7 @@ namespace WebSmsDn.Controllers
             try
             {
                 _logger.Information("Request DN: _tid ={_tid}, status_id ={status_id}, dtdone= {dtdone}, errorcode= {errorcode},errordescription= {errordescription}, sid={sid}, Operator= {Operator}",
-                    request._tid, request.status_id, request.dtdone, request.errorcode, request.errordescription,request.sid, "51021");
+                    request._tid, request.status_id, request.dtdone, request.errorcode, request.errordescription,request.sid, "51011");
 
                 string Dnstatus = String.Empty;
                 string ErrorCode = String.Empty;

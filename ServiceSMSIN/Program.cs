@@ -15,6 +15,7 @@ using Application.Common.Interfaces;
 using Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Common;
+using ServiceSMSIN.Services;
 
 namespace ServiceSMSIN
 {
@@ -24,6 +25,7 @@ namespace ServiceSMSIN
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
                 .WriteTo.File(@"D:\services\log\SMS\smsin\worker\smsin-general-log-.log", 
                 rollingInterval: RollingInterval.Day,
@@ -57,9 +59,7 @@ namespace ServiceSMSIN
 
                     services.AddPersistence(configuration);
                     services.AddInfrastructure(configuration);
-                    //services.AddTransient<IMsgQ, MsgQ>();
-                    //services.AddTransient<IExecuteDllService, ExecuteDllService>();
-                    //services.AddTransient<IHttpRequest, HttpRequest>();
+                    services.AddScoped<ICurrentUserService, CurrentUserService>();
                     services.Configure<RabbitMQAuth>(configuration.GetSection("RabbitMQAuth"));
 
                     services.AddHostedService<WorkerSmsin>();

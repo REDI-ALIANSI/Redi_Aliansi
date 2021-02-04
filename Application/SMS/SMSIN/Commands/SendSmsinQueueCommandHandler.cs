@@ -37,11 +37,11 @@ namespace Application.SMS.SMSIN.Commands
             }
 
             int KeywordServiceid = _context.Keywords.
-                                        Where(k => k.KeyWord.Equals(keyword)).
+                                        Where(k => k.KeyWord.ToLower().Equals(keyword.ToLower())).
                                         Select(s => s.ServiceId).SingleOrDefault();
             if(KeywordServiceid == 0)
             {
-                var subKeyword = _context.SubKeywords.Where(k => k.SubKeyWord.Equals(keyword))
+                var subKeyword = _context.SubKeywords.Where(k => k.SubKeyWord.ToLower().Equals(keyword.ToLower()))
                                         .Include(i => i.Keyword)
                                         .SingleOrDefault();
 

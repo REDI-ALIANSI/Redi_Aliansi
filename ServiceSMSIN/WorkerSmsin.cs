@@ -33,31 +33,46 @@ namespace ServiceSMSIN
             {
                 try
                 {
-                    _logger.Information("Worker SMSIN running...");
+                    //_logger.Information("Worker SMSIN running...");
                     var sw = Stopwatch.StartNew();
+                    int Delay = 1000;
                     using (var scope = Services.CreateScope())
                     {
                         var mediator =
                         scope.ServiceProvider
                             .GetRequiredService<IMediator>();
 
+                        
                         var smsinVM = await mediator.Send(new ProcessSmsinQueueCommand
                         {
                             queue = "SMSINQ",
                             appsDllPath = @"D:\services\Dll\",
                             QueueAuth = _RabbitMQAppSetting.Value
                         }, stoppingToken);
-                        _logger.Information("Processed SMSIN Msisdn:{msisdn} Mo_Message:{mo_message} MotxId:{motxid} ServiceId:{serviceid} Shortcode:{shortcode} Status:{status}",
+                        if (smsinVM.Status.Equals(200))
+                        {
+                            _logger.Information("Processed SMSIN Msisdn:{msisdn} Mo_Message:{mo_message} MotxId:{motxid} ServiceId:{serviceid} Shortcode:{shortcode} Status:{status}",
                             smsinVM.Msisdn,
                             smsinVM.Mo_Message,
                             smsinVM.MotxId,
                             smsinVM.ServiceId,
                             smsinVM.Shortcode,
                             smsinVM.Status);
+                        }
+                        else if (smsinVM.Status.Equals(500))
+                        {
+                            Delay = 1000;
+                            _logger.Information("Status: {status} Trx_Status: {trx_status}",smsinVM.Status,smsinVM.trx_status);
+                        }
+                        else
+                        {
+                            _logger.Information("Status: {status} Trx_Status: {trx_status}", smsinVM.Status, smsinVM.trx_status);
+                        }
                     }
                     sw.Stop();
                     _logger.Information("Worker SMSIN Done in elapse time : {time}", sw.Elapsed.TotalMilliseconds);
-                    await Task.Delay(1000, stoppingToken);
+                    
+                    await Task.Delay(Delay, stoppingToken);
                 }
                 catch (Exception ex)
                 {

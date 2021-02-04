@@ -25,5 +25,7 @@ namespace Domain.Entities.SMS
         public virtual List<ServiceCampaign> ServiceCampaigns { get; set; }
         public virtual List<Message> Messages { get; set; }
         public virtual List<ServiceRenewalConfiguration> ServiceRenewalConfigurations { get; set; }
+        public virtual List<RevenueReport> RevenueReports { get; set; } 
+        public virtual List<SubscriptionReport> SubscriptionReports { get; set; }
     }
 }

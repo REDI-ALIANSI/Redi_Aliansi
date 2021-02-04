@@ -25,6 +25,7 @@ namespace ServiceRENEWAL
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
                 .WriteTo.File(@"D:\services\log\SMS\renewal\renewal-general-log-.log",
                 rollingInterval: RollingInterval.Day,

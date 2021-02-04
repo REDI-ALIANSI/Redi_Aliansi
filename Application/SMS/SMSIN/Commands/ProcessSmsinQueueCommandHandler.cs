@@ -14,6 +14,8 @@ using Application.SMS.MESSAGE.Queries;
 using Application.SMS.SERVICE.Queries;
 using Application.SMS.SUBSCRIPTION.Commands;
 using Application.SMS.SMSOUT.Commands;
+using Application.SMS.SERVICE.ViewModel;
+using Newtonsoft.Json;
 
 namespace Application.SMS.SMSIN.Commands
 {
@@ -22,14 +24,14 @@ namespace Application.SMS.SMSIN.Commands
         private readonly IRediSmsDbContext _context;
         private readonly IMsgQ _msgQ;
         private readonly IMediator _mediator;
-        private readonly IExecuteDllService _executeDllService;
+        private readonly IHttpRequest _httpRequest;
 
-        public ProcessSmsinQueueCommandHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator, IExecuteDllService executeDllService)
+        public ProcessSmsinQueueCommandHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator, IHttpRequest httpRequest)
         {
             _context = context;
             _msgQ = msgQ;
             _mediator = mediator;
-            _executeDllService = executeDllService;
+            _httpRequest = httpRequest;
         }
 
         public async Task<SmsinVm> Handle(ProcessSmsinQueueCommand request, CancellationToken cancellationToken)
@@ -41,7 +43,7 @@ namespace Application.SMS.SMSIN.Commands
                 string MtTxId = String.Empty;
                 if (!msgQueue.Equals("ERROR : NO MESSAGE FOUND"))
                 {
-                    var smsinQ = JsonSerializer.Deserialize<SmsinD>(msgQueue);
+                    var smsinQ = System.Text.Json.JsonSerializer.Deserialize<SmsinD>(msgQueue);
                     var subs = await _context.Subscriptions.Where(s => s.Msisdn.Equals(smsinQ.Msisdn) &&
                                                                                    s.ServiceId.Equals(smsinQ.ServiceId) &&
                                                                                    s.OperatorId.Equals(smsinQ.OperatorId)).FirstOrDefaultAsync();
@@ -51,6 +53,7 @@ namespace Application.SMS.SMSIN.Commands
                         /*Get Sequence Action ON/OFF/PULL moved to dll for more dynamic process*/
                         string[] ArrKeyword = smsinQ.Mo_Message.ToUpper().Split(' ');
                         string messageType = String.Empty;
+                        int Order = 1;
                         if (await _mediator.Send(new CheckReservedKeyword { Mo_Message = ArrKeyword[0] }, cancellationToken))
                         {
                             if ((ArrKeyword[0].Equals("ON") || ArrKeyword[0].Equals("REG")))
@@ -77,33 +80,81 @@ namespace Application.SMS.SMSIN.Commands
                             else
                             {
                                 messageType = "PULL";
+                                if(ArrKeyword.Count() > 1)
+                                {
+                                    if (ArrKeyword[1].ToUpper() == "HELP" || ArrKeyword[1].ToUpper() == "INFO")
+                                    {
+                                        messageType = "HELP";
+                                    }
+                                    else
+                                    {
+                                        int LastIndex = ArrKeyword.Count() - 1;
+                                        Order = Convert.ToInt32(ArrKeyword[LastIndex]);
+                                    }
+                                }
                                 MtTxId = smsinQ.MotxId;
                             }
                         }
-                        
+                        else
+                        {
+                            messageType = "PULL";
+                            if (ArrKeyword.Count() > 1)
+                            {
+                                if (ArrKeyword[1].ToUpper() == "HELP" || ArrKeyword[1].ToUpper() == "INFO")
+                                {
+                                    messageType = "HELP";
+                                }
+                                else
+                                {
+                                    int LastIndex = ArrKeyword.Count() - 1;
+                                    Order = Convert.ToInt32(ArrKeyword[LastIndex]);
+                                }
+                            }
+                            MtTxId = smsinQ.MotxId;
+                        }
+
+                        var iservice = await _mediator.Send(new GetServiceById { ServiceId = smsinQ.ServiceId }, cancellationToken);
+
                         //Get Messages By Type
                         List<Message> getMessages = await _mediator.Send(new GetMessagesByType
                         { MessageType = messageType, Serviceid = smsinQ.ServiceId, OperatorId = smsinQ.OperatorId }
                                                                         , cancellationToken);
 
-                        var service = await _mediator.Send(new GetServiceById { ServiceId = smsinQ.ServiceId }, cancellationToken);
-                        
-                        //execute service script if its custom service :: HOMEWORK : How to log this?
-                        if (service.IsCustom)
+
+                        foreach (var getMessage in getMessages)
                         {
-                            /*string DllPath = request.appsDllPath + service.ServiceCustom;
-                            object[] dllParams = new object[] { smsinQ, getMessages };
-                            object DllResult = _executeDllService.ProcessExecute(DllPath, service.ServiceCustom, "Smsin", dllParams);
-                            if (!DllResult.Equals(null))
-                                getMessages = (List<Message>)DllResult;
-                            else throw new NotFoundException(nameof(DllResult), DllResult);*/
+                            getMessage.Service = null;
+                        }
+                       
+                        
+                        //Hit API Custom service if its custom service
+                        if (iservice.IsCustom)
+                        {
+                            //Put URL Webapisms here *this one is development
+                            string UrlWebapisms = @"http://localhost/redi.webapisms/api/";
+                            string Uri = UrlWebapisms + iservice.ServiceCustom + "/Smsin";
+                            var ReqObj = new CustomServiceSmsinRequest() { smsin = smsinQ, messages = getMessages };
+                            var Resp = await _httpRequest.PostHttpResp(Uri, ReqObj);
+                            var RespCustApi = JsonConvert.DeserializeObject<CustomServiceSmsinResponse>(Resp);
+                            if (RespCustApi.result.ToUpper().Equals("OK"))
+                            {
+                                if (RespCustApi.MessageIds.Count() > 0)
+                                {
+                                    getMessages = new List<Message>();
+                                    foreach (var MessageId in RespCustApi.MessageIds)
+                                    {
+                                        getMessages.Add(await _mediator.Send(new GetMessagesbyId { MessageId = MessageId }));
+                                    }
+                                }
+                            }
                         }
 
                         if (getMessages.Count() > 0)
                         {
                             foreach (var message in getMessages)
                             {
-                                MtTxId = Guid.NewGuid().ToString("N");
+                                if (messageType != "PULL")
+                                    MtTxId = Guid.NewGuid().ToString("N");
                                 //Send Message SMSOUTQ process here
                                 await _mediator.Send(new SendSmsoutQueueCommand
                                 {
@@ -117,28 +168,34 @@ namespace Application.SMS.SMSIN.Commands
                                     QueueAuth = request.QueueAuth
                                 }, cancellationToken);
                             }
+                            //define VM for presentation
+                            vm.Msisdn = smsinQ.Msisdn;
+                            vm.Mo_Message = smsinQ.Mo_Message;
+                            vm.MotxId = smsinQ.MotxId;
+                            vm.ServiceId = smsinQ.ServiceId;
+                            vm.OperatorId = smsinQ.OperatorId;
+                            //vm.Shortcode = smsinQ.Shortcode;
+                            vm.Status = 200;
                         }
-                        else throw new NotFoundException(nameof(List<Message>), getMessages);
-                        //define VM for presentation
-                        vm.Msisdn = smsinQ.Msisdn;
-                        vm.Mo_Message = smsinQ.Mo_Message;
-                        vm.MotxId = smsinQ.MotxId;
-                        vm.ServiceId = smsinQ.ServiceId;
-                        vm.OperatorId = smsinQ.OperatorId;
-                        //vm.Shortcode = smsinQ.Shortcode;
-                        vm.Status = 200;
+                        else
+                        {
+                            vm.Status = 500;
+                            vm.trx_status = "Message(s) for keyword not found";
+                        }
 
                         await _context.SmsinDs.AddAsync(smsinQ);
                         await _context.SaveChangesAsync(cancellationToken);
                     }
                     else
                     {
-                        throw new NotFoundException(nameof(SmsdnD), msgQueue);
+                        vm.Status = 500;
+                        vm.trx_status = "Failed Deserialize SMSINQ";
                     }   
                 }
                 else
                 {
-                    throw new NotFoundException(nameof(SmsdnD), msgQueue);
+                    vm.Status = 500;
+                    vm.trx_status = "Message Queue not found";
                 }
             }
             catch (Exception ex)

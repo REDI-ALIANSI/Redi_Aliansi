@@ -25,6 +25,7 @@ namespace Application.SMS.MESSAGE.Queries
                                      && m.ServiceId.Equals(request.Serviceid)
                                      && m.OperatorId.Equals(request.OperatorId))
                                      .OrderBy(m => m.Order)
+                                     .AsNoTracking()
                                      .ToListAsync();
         }
     }

@@ -16,7 +16,7 @@ namespace Presistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
-                .HasAnnotation("ProductVersion", "3.1.2")
+                .HasAnnotation("ProductVersion", "3.1.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             modelBuilder.Entity("Domain.Entities.Operator", b =>
@@ -62,6 +62,78 @@ namespace Presistence.Migrations
                             OperatorName = "INDOSAT",
                             RetryLimit = 0
                         });
+                });
+
+            modelBuilder.Entity("Domain.Entities.SMS.BlackList", b =>
+                {
+                    b.Property<int>("BlackListId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("LastModified")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Msisdn")
+                        .IsRequired()
+                        .HasColumnType("character varying(20)")
+                        .HasMaxLength(20);
+
+                    b.Property<int>("OperatorId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("BlackListId");
+
+                    b.HasIndex("OperatorId");
+
+                    b.ToTable("BlackLists");
+                });
+
+            modelBuilder.Entity("Domain.Entities.SMS.CampaignReport", b =>
+                {
+                    b.Property<int>("CampaignReportId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("Churn_Member")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("Mt_Hits")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Mt_Sent")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("New_Member")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("Revenue")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ServiceCampaignId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Total_Member")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CampaignReportId");
+
+                    b.HasIndex("ServiceCampaignId");
+
+                    b.ToTable("CampaignReports");
                 });
 
             modelBuilder.Entity("Domain.Entities.SMS.Content", b =>
@@ -151,6 +223,21 @@ namespace Presistence.Migrations
                             Description = "RICH VIDEO CONTENT",
                             Name = "VIDEO"
                         });
+                });
+
+            modelBuilder.Entity("Domain.Entities.SMS.GenReportStatus", b =>
+                {
+                    b.Property<int>("StatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("StatusId");
+
+                    b.ToTable("GenReports");
                 });
 
             modelBuilder.Entity("Domain.Entities.SMS.Keyword", b =>
@@ -266,6 +353,52 @@ namespace Presistence.Migrations
                     b.HasIndex("SidBilling");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("Domain.Entities.SMS.RevenueReport", b =>
+                {
+                    b.Property<int>("RevenueReportId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("Mt_Hits")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Mt_Sent")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Mt_Type")
+                        .HasColumnType("text");
+
+                    b.Property<int>("OperatorId")
+                        .HasColumnType("integer");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
+
+                    b.Property<double>("Revenue")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("SDC")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Sid")
+                        .HasColumnType("text");
+
+                    b.HasKey("RevenueReportId");
+
+                    b.HasIndex("OperatorId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("RevenueReports");
                 });
 
             modelBuilder.Entity("Domain.Entities.SMS.Service", b =>
@@ -485,15 +618,6 @@ namespace Presistence.Migrations
                     b.HasKey("Shortcode");
 
                     b.ToTable("ShortCodes");
-
-                    b.HasData(
-                        new
-                        {
-                            Shortcode = 93450,
-                            Created = new DateTime(2020, 6, 16, 16, 2, 12, 620, DateTimeKind.Local).AddTicks(9002),
-                            CreatedBy = "InitialMigration",
-                            Description = "HM Short Code"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.SMS.Sid", b =>
@@ -940,6 +1064,262 @@ namespace Presistence.Migrations
                     b.ToTable("SubscriptionHists");
                 });
 
+            modelBuilder.Entity("Domain.Entities.SMS.SubscriptionReport", b =>
+                {
+                    b.Property<int>("SubscriptionReportId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("Churn_Member")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("New_Member")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OperatorId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SDC")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ServiceName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Total_Member")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SubscriptionReportId");
+
+                    b.HasIndex("OperatorId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("SubscriptionReports");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("character varying(256)")
+                        .HasMaxLength(256);
+
+                    b.Property<string>("NormalizedName")
+                        .HasColumnType("character varying(256)")
+                        .HasMaxLength(256);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("character varying(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("character varying(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("character varying(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("character varying(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("Presistence.Identity.ApplicationUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("character varying(256)")
+                        .HasMaxLength(256);
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("character varying(256)")
+                        .HasMaxLength(256);
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("character varying(256)")
+                        .HasMaxLength(256);
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("character varying(256)")
+                        .HasMaxLength(256);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("Domain.Entities.SMS.BlackList", b =>
+                {
+                    b.HasOne("Domain.Entities.Operator", "Operator")
+                        .WithMany("BlackLists")
+                        .HasForeignKey("OperatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.SMS.CampaignReport", b =>
+                {
+                    b.HasOne("Domain.Entities.SMS.ServiceCampaign", "ServiceCampaign")
+                        .WithMany("CampaignReports")
+                        .HasForeignKey("ServiceCampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Entities.SMS.Content", b =>
                 {
                     b.HasOne("Domain.Entities.SMS.ContentType", "ContentType")
@@ -981,6 +1361,21 @@ namespace Presistence.Migrations
                     b.HasOne("Domain.Entities.SMS.Sid", "Sid")
                         .WithMany("Messages")
                         .HasForeignKey("SidBilling")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.SMS.RevenueReport", b =>
+                {
+                    b.HasOne("Domain.Entities.Operator", "Operator")
+                        .WithMany("RevenueReports")
+                        .HasForeignKey("OperatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.SMS.Service", "Service")
+                        .WithMany("RevenueReports")
+                        .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1159,6 +1554,72 @@ namespace Presistence.Migrations
                     b.HasOne("Domain.Entities.SMS.Service", "Service")
                         .WithMany("GetSubscriptionHists")
                         .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Entities.SMS.SubscriptionReport", b =>
+                {
+                    b.HasOne("Domain.Entities.Operator", "Operator")
+                        .WithMany("SubscriptionReports")
+                        .HasForeignKey("OperatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.SMS.Service", "Service")
+                        .WithMany("SubscriptionReports")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("Presistence.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("Presistence.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Presistence.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Presistence.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -14,7 +14,7 @@ namespace Infrastructure
 {
     public class MsgQ : IMsgQ
     {
-        public Task<string> ConsumerQueue(string Queue, RabbitMQAuth mQAuth)
+        public async Task<string> ConsumerQueue(string Queue, RabbitMQAuth mQAuth)
         {
             try
             {
@@ -25,6 +25,7 @@ namespace Infrastructure
                     Password = mQAuth.Password,
                     VirtualHost = mQAuth.VirtualHost
                 };
+                factory.DispatchConsumersAsync = true;
                 string message = String.Empty;
                 using (var connection = factory.CreateConnection())
                 using (var channel = connection.CreateModel())
@@ -35,32 +36,16 @@ namespace Infrastructure
                                          autoDelete: false,
                                          arguments: null);
 
-                    /* 
-                    var consumer = new EventingBasicConsumer(channel);
-                    consumer.Received += (model, ea) =>
-                    {
-                        var body = ea.Body;
-                        string message = Encoding.UTF8.GetString(body);
-                        list_message.Add(message);
-
-                        channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
-                    };
-                    channel.BasicConsume(queue: Queue,
-                                         autoAck: false,
-                                         consumer: consumer);
-                    */
-
-                    //bool noAct = false;
                     BasicGetResult result = channel.BasicGet(Queue, true);
                     if (result == null)
                     {
-                        return Task.FromResult("ERROR : NO MESSAGE FOUND");
+                        return await Task.FromResult("ERROR : NO MESSAGE FOUND");
                     }
                     else
                     {
-                        var body = result.Body;
+                        var body = result.Body.ToArray();
                         message = Encoding.UTF8.GetString(body);
-                        return Task.FromResult(message);
+                        return await Task.FromResult(message);
                     }
                 }
             }
@@ -70,7 +55,7 @@ namespace Infrastructure
             }
         }
 
-        public Task<int> GetQueueCount(string Queue, RabbitMQAuth mQAuth)
+        public async Task<int> GetQueueCount(string Queue, RabbitMQAuth mQAuth)
         {
             var factory = new ConnectionFactory
             {
@@ -83,7 +68,7 @@ namespace Infrastructure
             using (var channel = connection.CreateModel())
             {
                 int queueCount = Convert.ToInt32(channel.MessageCount(Queue));
-                return Task.FromResult(queueCount);
+                return await Task.FromResult(queueCount);
             }
         }
 

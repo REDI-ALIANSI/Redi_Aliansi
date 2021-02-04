@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace Application.SMS.MESSAGE.Command
                 var MessageTxt = String.Empty;
                 if (String.IsNullOrEmpty(request.rMessage.MessageTxt))
                 {
-                    var iContent = await _context.Contents.Where(c => c.MessageId.Equals(request.rMessage.MessageId) && c.ContentSchedule.Equals(request.rRenewalDate)).FirstOrDefaultAsync();
+                    var iContent = await _context.Contents.Where(c => c.MessageId.Equals(request.rMessage.MessageId) && c.ContentSchedule.Equals(request.rRenewalDate) && !c.Processed).FirstOrDefaultAsync();
 
                     if(iContent != null)
                     {
@@ -48,7 +49,14 @@ namespace Application.SMS.MESSAGE.Command
                     }
                     else
                     {
-                        MessageTxt = String.Empty;
+                        //Set if Renewal Message is not empty
+                        MessageTxt = request.rMessage.MessageTxt;
+
+                        if (request.rMessage.IsRichContent)
+                        {
+                            //HOMEWORK: replace with Get content API URL later
+                            MessageTxt = MessageTxt.Replace("%C1%", "Content URL");
+                        }
                     }
                 }
                 

@@ -13,25 +13,35 @@ using Application.SMS.SMSOUT.Commands;
 using Application.SMS.MESSAGE.Command;
 using Application.Common.Behaviour;
 using Application.SMS.SUBSCRIPTION.Commands;
+using Application.SMS.RENEWAL.ViewModel;
+using System.Diagnostics;
+using Application.SMS.SERVICE.Queries;
+using Application.SMS.SERVICE.ViewModel;
+using System.Text.Json;
 
 namespace Application.SMS.RENEWAL.Commands
 {
-    public class ProcessRenewalConfigHandler : IRequestHandler<ProcessRenewalConfig>
+    public class ProcessRenewalConfigHandler : IRequestHandler<ProcessRenewalConfig,RenewalVM>
     {
         private readonly IMediator _mediator;
         private readonly IRediSmsDbContext _context;
+        private readonly IHttpRequest _httpRequest;
 
-        public ProcessRenewalConfigHandler(IMediator mediator, IRediSmsDbContext context)
+        public ProcessRenewalConfigHandler(IMediator mediator, IRediSmsDbContext context, IHttpRequest httpRequest)
         {
             _mediator = mediator;
             _context = context;
+            _httpRequest = httpRequest;
         }
 
-        public async Task<Unit> Handle(ProcessRenewalConfig request, CancellationToken cancellationToken)
+        public async Task<RenewalVM> Handle(ProcessRenewalConfig request, CancellationToken cancellationToken)
         {
             try
             {
                 DateTime NextRenewalDate = new DateTime();
+                var renewVM = new RenewalVM();
+                var sw = Stopwatch.StartNew();
+                int MessageCount = 0;
                 var listSubscription = await _mediator.Send(new GetSubscriptionByServiceOperator
                 {
                     ServiceId = request.renewalConfig.ServiceId,
@@ -43,19 +53,14 @@ namespace Application.SMS.RENEWAL.Commands
                 {
                     var today = DateTime.Today.DayOfWeek;
                     //GET Renewal Message from content
-                    var rMessage = request.renewalConfig.Message;
-                    var rTxtMessage = await _mediator.Send(new GetRenewalMessage { rMessage = request.renewalConfig.Message, rRenewalDate = DateTime.Today },cancellationToken);
+                    var rMessage = await _context.Messages.AsNoTracking().Where(m => m.MessageId == request.renewalConfig.MessageId).FirstOrDefaultAsync();
+                    
+                    var rTxtMessage = await _mediator.Send(new GetRenewalMessage { rMessage = rMessage, rRenewalDate = DateTime.Today },cancellationToken);
                     
                     //If renewal message is empty send Email warning notification here
                     if (!String.IsNullOrEmpty(rTxtMessage))
                     {
                         rMessage.MessageTxt = rTxtMessage;
-                    }
-                    
-                    // Make function for put renewal message to SMSOUTD Queue
-                    if (request.renewalConfig.ActiveDll)
-                    {
-                        //Check Dll here
                     }
 
                     if (!request.renewalConfig.IsSequence && request.renewalConfig.ScheduleDay == today)
@@ -74,9 +79,27 @@ namespace Application.SMS.RENEWAL.Commands
 
                         NextRenewalDate = await _mediator.Send(new GetNextDayofWeekDate { DayofWeek = NextRenewalDay },cancellationToken);
 
+                        var service = await _mediator.Send(new GetServiceById { ServiceId = request.renewalConfig.ServiceId }, cancellationToken);
+
                         //send message to SMSOUTP Queue
                         foreach (var Subscription in listSubscription)
                         {
+                            // Make function for put renewal message to SMSOUTP Queue
+                            if (request.renewalConfig.ActiveDll)
+                            {
+                                string Uri = service.ServiceCustom = "/Renewal";
+                                var ReqObj = new CustomServiceRenewalRequest() { subscription = Subscription, message = rMessage.MessageTxt };
+                                var Resp = await _httpRequest.PostHttpResp(Uri, ReqObj);
+                                var RespCustApi = JsonSerializer.Deserialize<CustomServiceRenewalResponse>(Resp);
+                                if (RespCustApi.result.Succeeded)
+                                {
+                                    if (!String.IsNullOrEmpty(RespCustApi.cMessage))
+                                    {
+                                        rMessage.MessageTxt = RespCustApi.cMessage;
+                                    }
+                                }
+                            }
+
                             if (!String.IsNullOrEmpty(rMessage.MessageTxt))
                             {
                                 string iQueue = "SMSOUTP";
@@ -92,6 +115,7 @@ namespace Application.SMS.RENEWAL.Commands
                                     rMtTxId = MtTxId,
                                     QueueAuth = request.QueueAuth
                                 });
+                                MessageCount ++;
                             }
                             //Update Subs for next Renewal Date
                             await _mediator.Send(new UpdateSubscriptionRenewal { subscription = Subscription, rNextRenewalDate = NextRenewalDate }, cancellationToken);
@@ -119,14 +143,17 @@ namespace Application.SMS.RENEWAL.Commands
                                     rMtTxId = MtTxId,
                                     QueueAuth = request.QueueAuth
                                 });
+                                MessageCount++;
                             }
                             //Update Subs for next Renewal Date
                             await _mediator.Send(new UpdateSubscriptionRenewal { subscription = Subscription, rNextRenewalDate = NextRenewalDate }, cancellationToken);
                         }
                     }
                 }
-
-                return Unit.Value;
+                sw.Stop();
+                renewVM.GenerateSpan = sw.Elapsed;
+                renewVM.MessagesGenerated = MessageCount;
+                return renewVM;
             }
             catch (Exception ex)
             {

@@ -21,5 +21,6 @@ namespace Domain.Entities.SMS
 
         public Operator Operator { get; set; }
         public Service Service { get; set; }
+        public List<CampaignReport> CampaignReports { get; set; }
     }
 }

@@ -153,12 +153,14 @@ namespace Application.SMS.SMSOUT.Commands
                     }
                     else
                     {
-                        throw new NotFoundException(nameof(SmsoutD), msgQueue);
+                        vm.Status = 500;
+                        vm.Trx_Status = "Failed Deserialize message";
                     }
                 }
                 else
                 {
-                    throw new NotFoundException(nameof(SmsoutD), msgQueue);
+                    vm.Status = 500;
+                    vm.Trx_Status = "Message queue not found";
                 }
             }
             catch (Exception ex)

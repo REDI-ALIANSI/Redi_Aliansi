@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 using Application.Common.Interfaces;
 using Domain.Entities.SMS;
 using MediatR;
-
+using System.Web;
 namespace Application.SMS.SMSOUT.Commands
 {
     public class SmsoutXlCommandHandler : IRequestHandler<SmsoutXlCommand, SmsoutTelcoHitVm>
@@ -39,7 +39,7 @@ namespace Application.SMS.SMSOUT.Commands
                 url.Append("&DEST_ADDR=" + request.Smsout.Msisdn);
                 url.Append("&PROTOCOL_ID=0");
                 url.Append("&MSG_CLASS=1");
-                url.Append("&TEXT=" + request.Smsout.Mt_Message);
+                url.Append("&TEXT=" + HttpUtility.UrlEncode(request.Smsout.Mt_Message));
                 url.Append("&REGISTERED=yes");
                 url.Append("&SOURCE_ADDR=" + request.Smsout.Message.SidBilling);
                 url.Append("&SHORT_NAME=" + request.Smsout.Message.Billing2);

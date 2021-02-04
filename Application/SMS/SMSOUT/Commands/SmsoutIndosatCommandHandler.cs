@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Application.Common.Interfaces;
 using Domain.Entities.SMS;
 using MediatR;
@@ -37,7 +38,7 @@ namespace Application.SMS.SMSOUT.Commands
                 url.Append("&pwd=" + request.Smsout.Message.Billing2);
                 url.Append("&serviceid=" + request.Smsout.Message.SidBilling);
                 url.Append("&msisdn=" + request.Smsout.Msisdn);
-                url.Append("&sms=" + request.Smsout.Mt_Message);
+                url.Append("&sms=" + HttpUtility.UrlEncode(request.Smsout.Mt_Message));
                 url.Append("&transid=" + request.Smsout.MtTxId);
                 url.Append("&smstype=0");
                 url.Append("&sdmcode=" + request.Smsout.Message.Billing3);

@@ -1,6 +1,7 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.SMS.SERVICE.Queries;
+using Application.SMS.SERVICE.ViewModel;
 using Domain.Entities.SMS;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +20,14 @@ namespace Application.SMS.SMSDN.Commands
         private readonly IRediSmsDbContext _context;
         private readonly IMsgQ _msgQ;
         private readonly IMediator _mediator;
+        private readonly IHttpRequest _httpRequest;
 
-        public ProcessSmsDnWatchQueueHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator)
+        public ProcessSmsDnWatchQueueHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator, IHttpRequest httpRequest)
         {
             _context = context;
             _msgQ = msgQ;
             _mediator = mediator;
+            _httpRequest = httpRequest;
         }
 
         public async Task<Unit> Handle(ProcessSmsDnWatchQueue request, CancellationToken cancellationToken)
@@ -40,20 +43,21 @@ namespace Application.SMS.SMSDN.Commands
                         //Check and get SMSOUTD for this DN
                         smsdnQ.SmsoutD = await _context.SmsoutDs.Where(o => o.MtTxId.Equals(smsdnQ.MtTxId))
                                             .Include(m => m.Message).SingleOrDefaultAsync();
-                        //execute Service script :: HOMEWORK : How to log this?
+                        
+                        //execute Custom Service script
                         var service = await _mediator.Send(new GetServiceById { ServiceId = smsdnQ.SmsoutD.Message.ServiceId }, cancellationToken);
-                        //if (!String.IsNullOrEmpty(service.Dll))
-                        //{
-                        //    string DllPath = request.appsDllPath + service.Dll;
-                        //    object[] dllParams = new object[] { smsdnQ };
-                        //    var DllResult = ExecuteDllService.ProcessExecute(DllPath, service.Dll, "Dnwatch", dllParams);
-
-                        //    if (!DllResult.Equals("200"))
-                        //    {
-                        //        await _msgQ.ProducerQueue(smsdnQ, request.queue);
-                        //    }
-                        //}
-                        //else throw new NotFoundException(nameof(ServiceRenewalConfiguration), smsdnQ.SmsoutD.Message.ServiceId);
+                        
+                        if (!String.IsNullOrEmpty(service.ServiceCustom))
+                        {
+                            string Uri = service.ServiceCustom = "/DnWatch";
+                            var ReqObj = new CustomServiceDnwatchRequest() { smsdn = smsdnQ };
+                            var Resp = await _httpRequest.PostHttpResp(Uri, ReqObj);
+                            var RespCustApi = JsonSerializer.Deserialize<CustomServiceSmsinResponse>(Resp);
+                            if (RespCustApi.result.ToUpper().Equals("OK"))
+                            {
+                                
+                            }
+                        }
                     }
                 }
                 else

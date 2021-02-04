@@ -6,6 +6,7 @@ using MediatR;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System;
 
 namespace Application.SMS.SUBSCRIPTION.Queries
 {
@@ -21,9 +22,12 @@ namespace Application.SMS.SUBSCRIPTION.Queries
         public async Task<List<Subscription>> Handle(GetSubscriptionByServiceOperator request, CancellationToken cancellationToken)
         {
             return await _context.Subscriptions
-                                    .Where(s => s.ServiceId.Equals(request.ServiceId) && s.OperatorId.Equals(request.OperatorId) && s.Next_Renew_Time.Equals(request.rRenewalDate))
+                                    .Where(s => s.ServiceId.Equals(request.ServiceId) 
+                                    && s.OperatorId.Equals(request.OperatorId) 
+                                    && s.Next_Renew_Time >= (request.rRenewalDate) 
+                                    && s.Next_Renew_Time < request.rRenewalDate.AddDays(1))
                                     .AsNoTracking()
-                                     .ToListAsync();
+                                    .ToListAsync();
         }
     }
 }

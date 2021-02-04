@@ -17,5 +17,8 @@ namespace Domain.Entities
         public List<SubscriptionHist> SubscriptionHists { get; set; }
         public List<ServiceCampaign> ServiceCampaigns { get; set; }
         public List<Message> Messages { get; set; }
+        public List<RevenueReport> RevenueReports { get; set; }
+        public List<SubscriptionReport> SubscriptionReports { get; set; }
+        public List<BlackList> BlackLists { get; set; }
     }
 }

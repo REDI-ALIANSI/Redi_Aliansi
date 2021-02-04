@@ -28,7 +28,7 @@ namespace WebSmsDn
 
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
-            //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             //.WriteTo.Console(outputTemplate: @"{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] Context: {SourceContext} TraceId: {TraceId} {Message:lj}{NewLine}{Exception}")
             .Enrich.FromLogContext()
             .WriteTo.Logger(g => g

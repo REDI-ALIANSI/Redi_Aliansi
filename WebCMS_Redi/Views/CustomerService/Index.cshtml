@@ -1,0 +1,180 @@
+﻿@model Application.SMS.SUBSCRIPTION.ViewModel.SubscriptionCsVM
+@{
+    ViewData["Title"] = "Redi Customer Service";
+    int i = 1;
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Customer Service</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Filter</h6>
+    </div>
+    <div class="card-body">
+        <form asp-controller="CustomerService" asp-action="Index" method="post">
+            <div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="OperatorId" id="Date">Operator : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-control" asp-for="OperatorId" asp-items="Model.ListVMOperator" name="Operatorid"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <label asp-for="Msisdn" id="Msisdn">Msisdn : </label>
+                        </div>
+                        <div class="col-md-6">
+                            <input class="form-control" asp-for="Msisdn" id="Msisdn" placeholder="Enter Msisdn...">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="col-md-6">
+                            <input class="btn btn-success" type="submit" value="Search" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Charged</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Total_Charged</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!String.IsNullOrEmpty(Model.Msisdn) && !Model.IsBlacklisted)
+    {
+        <div class="card-body">
+            <a onclick="BlackList(@Model.Msisdn, @Model.OperatorId)" class="btn btn-danger btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-trash"></i>
+                </span>
+                <span class="text">Blacklist Msisdn</span>
+            </a>
+        </div>
+    }
+
+    @if (Model.Subscriptions != null)
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Msisdn</th>
+                        <th>Service</th>
+                        <th>Operator</th>
+                        <th>Total Charged</th>
+                        <th>Blacklisted</th>
+                        <th>Subscrition_Date</th>
+                        <th>Unsubscription_Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>No.</th>
+                        <th>Msisdn</th>
+                        <th>Service</th>
+                        <th>Operator</th>
+                        <th>Total Charged</th>
+                        <th>Blacklisted</th>
+                        <th>Subscrition_Date</th>
+                        <th>Unsubscription_Date</th>
+                        <th>Action</th>
+                    </tr>
+                </tfoot>
+                @foreach (var Subs in Model.Subscriptions)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@Model.Msisdn</td>
+                        <td>@Subs.Iservice.Name</td>
+                        <td>@Model.iOperator.OperatorName</td>
+                        <td>@Subs.TotalCharged</td>
+                        @if (Model.IsBlacklisted)
+                        {
+                            <td>YES</td>
+                        }
+                        else
+                        {
+                            <td>NO</td>
+                        }
+                        <td>@Subs.Subscrition_Date.ToShortDateString()</td>
+                        @if (Subs.Unsubscription_Date.HasValue)
+                        {
+                            <td>@Subs.Unsubscription_Date.Value.ToShortDateString()</td>
+                            <td>N/A</td>
+                        }
+                        else
+                        {
+                            <td>N/A</td>
+                            <td>
+                                <a onclick="Unreg(@Model.Msisdn, @Model.OperatorId, @Subs.ServiceId)" class="btn btn-warning btn-icon-split">
+                                    <span class="text">Unreg Msisdn</span>
+                                </a>
+                            </td>
+                        }
+                    </tr>
+                    i++;
+                }
+            </table>
+        </div>
+    }
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        function Unreg(Msisdn, OperatorId, ServiceId) {
+            var url = "@Url.Action("UnregMsisdn")";
+            var Msisdn = Msisdn;
+            var OperatorId = OperatorId;
+            var ServiceId = ServiceId;
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: { 'pMsisdn': Msisdn, 'pServiceId': ServiceId, 'pOperatorId': OperatorId },
+                success: function (response) {
+                    alert(response);
+                    window.location.reload();
+                }
+            });
+        }
+
+        function BlackList(Msisdn, OperatorId) {
+            var url = "@Url.Action("BlackListMsisdn")";
+            var Msisdn = Msisdn;
+            var OperatorId = OperatorId;
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: { 'pMsisdn': Msisdn, 'pOperatorId': OperatorId },
+                success: function (response) {
+                    alert(response);
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
+}

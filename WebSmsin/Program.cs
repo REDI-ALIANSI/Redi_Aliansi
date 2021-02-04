@@ -30,7 +30,7 @@ namespace WebSmsin
 
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
-            //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             //.WriteTo.Console(outputTemplate: @"{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] Context: {SourceContext} TraceId: {TraceId} {Message:lj}{NewLine}{Exception}")
             .Enrich.FromLogContext()
             .WriteTo.Logger( g => g
@@ -69,8 +69,8 @@ namespace WebSmsin
                 {
                     var services = scope.ServiceProvider;
 
-                    var rediSmsContext = services.GetRequiredService<RediSmsDbContext>();
-                    rediSmsContext.Database.Migrate();
+                    //var rediSmsContext = services.GetRequiredService<RediSmsDbContext>();
+                    //rediSmsContext.Database.Migrate();
 
                     //var identityContext = services.GetRequiredService<ApplicationDbContext>();
                     //identityContext.Database.Migrate();

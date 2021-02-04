@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.SMS.BLACKLIST.Query;
 using Domain.Entities.SMS;
 using MediatR;
 
@@ -12,18 +13,20 @@ namespace Application.SMS.SMSOUT.Commands
     {
         private readonly IRediSmsDbContext _context;
         private readonly IMsgQ _msgQ;
+        private readonly IMediator _mediator;
 
-        public SendSmsoutQueueCommandHandler(IRediSmsDbContext context, IMsgQ msgQ)
+        public SendSmsoutQueueCommandHandler(IRediSmsDbContext context, IMsgQ msgQ, IMediator mediator)
         {
             _context = context;
             _msgQ = msgQ;
+            _mediator = mediator;
         }
 
         public async Task<Unit> Handle(SendSmsoutQueueCommand request, CancellationToken cancellationToken)
         {
             try
             {
-                if (request.rMessage != null)
+                if (request.rMessage != null && !await _mediator.Send(new IsBlacklist { Msisdn = request.rMsisdn, OperatorId = request.rMessage.OperatorId }))
                 {
                     SmsoutD smsoutD = new SmsoutD()
                     {

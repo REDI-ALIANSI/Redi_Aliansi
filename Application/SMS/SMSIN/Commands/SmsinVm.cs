@@ -13,5 +13,6 @@ namespace Application.SMS.SMSIN.Commands
         public int OperatorId { get; set; }
         public int Shortcode { get; set; }
         public int Status { get; set; }
+        public string trx_status { get; set; }
     }
 }

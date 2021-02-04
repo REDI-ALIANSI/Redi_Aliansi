@@ -11,5 +11,7 @@ namespace Application.Common.Interfaces
         Task<string> GetRequest(string Uri);
 
         Task<HttpResponseMessage> GetHttpResp(string Uri);
+
+        Task<string> PostHttpResp(string Uri, Object PostReq);
     }
 }

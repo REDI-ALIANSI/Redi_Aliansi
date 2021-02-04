@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Serialization;
 using Application.Common.Interfaces;
 using Domain.Entities.SMS;
@@ -42,7 +43,7 @@ namespace Application.SMS.SMSOUT.Commands
                 url.Append("&sid=" + request.Smsout.Message.SidBilling);
                 url.Append("&sender=" + request.Smsout.Service.Shortcode);
                 url.Append("&msisdn=" + request.Smsout.Msisdn);
-                url.Append("&sms=" + request.Smsout.Mt_Message);
+                url.Append("&sms=" + HttpUtility.UrlEncode(request.Smsout.Mt_Message));
                 url.Append("&trx_id=" + request.Smsout.MtTxId);
 
                 //call TSEL API

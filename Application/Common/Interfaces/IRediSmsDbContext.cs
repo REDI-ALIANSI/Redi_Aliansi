@@ -28,6 +28,11 @@ namespace Application.Common.Interfaces
         DbSet<Subscription> Subscriptions { get; set; }
         DbSet<SubscriptionHist> SubscriptionHists { get; set; }
         DbSet<Operator> Operators { get; set; }
+        DbSet<RevenueReport> RevenueReports { get; set; }
+        DbSet<CampaignReport> CampaignReports { get; set; }
+        DbSet<SubscriptionReport> SubscriptionReports { get; set; }
+        DbSet<GenReportStatus> GenReports { get; set; }
+        DbSet<BlackList> BlackLists { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
